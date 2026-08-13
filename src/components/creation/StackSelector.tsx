@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { StackCategory } from '@/types/dna';
+import { StackCategory } from '@/types/builder';
 import { Check } from 'lucide-react';
 
 interface StackSelectorProps {
@@ -28,7 +28,7 @@ const STACK_OPTIONS: Array<{ category: StackCategory; desc: string }> = [
 export const StackSelector: React.FC<StackSelectorProps> = ({ selected, onChange }) => {
   const toggleCategory = (category: StackCategory) => {
     if (selected.includes(category)) {
-      if (selected.length === 1) return; // Require at least 1 stack selection
+      if (selected.length === 1) return;
       onChange(selected.filter((s) => s !== category));
     } else {
       if (selected.length >= 4) {
@@ -40,10 +40,10 @@ export const StackSelector: React.FC<StackSelectorProps> = ({ selected, onChange
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
-        <span>SELECT YOUR PRIMARY STACK (1 TO 4)</span>
-        <span className="text-[#00FF66] font-bold">
+    <div className="space-y-4 font-mono">
+      <div className="flex items-center justify-between text-xs font-bold">
+        <span className="text-[#1A2E22]/70 uppercase tracking-wider">SELECT YOUR PRIMARY STACK (1 TO 4)</span>
+        <span className="bg-[#FF007A] text-white px-3 py-1 rounded-full text-xs font-bold">
           {selected.length} / 4 SELECTED
         </span>
       </div>
@@ -56,23 +56,21 @@ export const StackSelector: React.FC<StackSelectorProps> = ({ selected, onChange
               key={item.category}
               type="button"
               onClick={() => toggleCategory(item.category)}
-              className={`p-4 text-left font-mono transition-all border relative flex flex-col justify-between group cursor-pointer ${
+              className={`p-4 text-left rounded-2xl transition-all border flex flex-col justify-between cursor-pointer ${
                 isSelected
-                  ? 'bg-[#00FF66]/10 border-[#00FF66] text-white shadow-[2px_2px_0px_0px_#00FF66]'
-                  : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  ? 'bg-[#FF007A] text-white border-[#FF007A] shadow-md'
+                  : 'bg-white text-[#1A2E22] border-[#1A2E22]/15 hover:border-[#FF007A]'
               }`}
             >
               <div className="flex items-center justify-between w-full mb-1">
-                <span className={`text-sm font-extrabold tracking-wider ${isSelected ? 'text-[#00FF66]' : 'text-white'}`}>
-                  {item.category}
-                </span>
+                <span className="text-xs font-extrabold tracking-tight">{item.category}</span>
                 {isSelected && (
-                  <div className="w-5 h-5 bg-[#00FF66] text-black flex items-center justify-center rounded-none">
+                  <div className="w-5 h-5 bg-[#FFE600] text-[#1A2E22] flex items-center justify-center rounded-full">
                     <Check className="w-3.5 h-3.5 stroke-[3]" />
                   </div>
                 )}
               </div>
-              <span className="text-[10px] text-zinc-500 line-clamp-1 group-hover:text-zinc-400">
+              <span className={`text-[10px] font-bold line-clamp-1 ${isSelected ? 'text-white/80' : 'text-[#1A2E22]/60'}`}>
                 {item.desc}
               </span>
             </button>

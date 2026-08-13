@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Public builder profiles - readable by everyone (public data only).
+    // Writes happen ONLY through the server (admin SDK bypasses rules),
+    // so client write access is fully denied.
+    match /builders/{uid} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    // Claim markers - fully private, never exposed to clients.
+    match /users/{uid} {
+      allow read, create, update, delete: if false;
+    }
+
+    // Unique claim-code reservations (code -> uid). Server-managed only.
+    match /codes/{code} {
+      allow read, create, update, delete: if false;
+    }
+  }
+}

@@ -1,47 +1,10 @@
-import { BuilderIdentity, StackCategory, BuildMode, BuildEnergy } from '@/types/dna';
-import { createBuilderIdentity } from './dna-engine';
+import { BuilderIdentity, StackCategory } from '@/types/builder';
+import { createBuilderIdentity, fnv1aHash } from './builder-engine';
 
 const DEMO_NAMES = [
   'Mohammed Aadil',
-  'Aarav Sharma',
-  'Ananya Iyer',
-  'Rohan Mehta',
-  'Priya Nair',
-  'Vikram Patel',
-  'Tara Deshmukh',
-  'Siddharth Rao',
-  'Kavya Joshi',
-  'AdITYA Kumar',
-  'Diya Banerjee',
-  'Neerav Sen',
-  'Ishaan Verma',
-  'Zoya Khan',
-  'Kabir Sengupta',
-  'Rhea Pillai',
-  'Arjun Kulkarni',
-  'Meera Menon',
-  'Suryanansh Gupta',
-  'Tanvi Hegde',
-  'Devansh Bhat',
-  'Simran Malhotra',
-  'Pranav Sundaram',
-  'Nisha Agarwal',
-  'Yash Vardhan',
-  'Avani Saxena',
-  'Harsh Raghunath',
-  'Sanika Nambiar',
-  'Rahul Kapoor',
-  'Pooja Choudhury',
-  'Farhan Qureshi',
-  'Kirti Trivedi',
-  'Karan Johar',
-  'Shruti Pandey',
-  'Samarth Nanda',
-  'Natasha Roy',
-  'Gaurav Shetty',
-  'Sonakshi Dave',
-  'Utkarsh Mishra',
-  'Shreya Dutta',
+  'Hameed Afsar KM',
+  'Mohamed Shakeel',
 ];
 
 const STACK_GROUPS: StackCategory[][] = [
@@ -57,8 +20,7 @@ const STACK_GROUPS: StackCategory[][] = [
   ['DESIGN', 'PRODUCT'],
 ];
 
-const MODES: BuildMode[] = ['SHIP', 'BREAK', 'EXPLORE', 'DESIGN', 'AUTOMATE', 'SCALE'];
-const ENERGIES: BuildEnergy[] = ['FAST', 'DEEP', 'WEIRD', 'RELENTLESS', 'EXPERIMENTAL'];
+const ACCENT_COLORS = ['#0B6B3A', '#FFE600', '#FF007A', '#2EC4B6', '#064E29'];
 
 // SVG default avatar generator (data URL) so demo builders render clean graphics if no photo uploaded
 export function createSampleAvatarSvg(name: string, colorHex: string): string {
@@ -69,36 +31,32 @@ export function createSampleAvatarSvg(name: string, colorHex: string): string {
     .substring(0, 2)
     .toUpperCase();
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
-    <rect width="400" height="400" fill="#0A0A0B"/>
-    <circle cx="200" cy="200" r="180" fill="none" stroke="${colorHex}" stroke-width="2" stroke-dasharray="10 6"/>
-    <circle cx="200" cy="200" r="120" fill="${colorHex}" fill-opacity="0.1" stroke="${colorHex}" stroke-width="1.5"/>
-    <text x="200" y="220" font-family="monospace" font-weight="bold" font-size="72" fill="#FFFFFF" text-anchor="middle">${initials}</text>
+    <rect width="400" height="400" fill="#FBF6E9"/>
+    <rect x="24" y="24" width="352" height="352" fill="none" stroke="#1A2E22" stroke-width="10"/>
+    <rect x="44" y="44" width="312" height="312" fill="${colorHex}" fill-opacity="0.22" stroke="#1A2E22" stroke-width="6"/>
+    <text x="200" y="228" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="96" fill="#1A2E22" text-anchor="middle">${initials}</text>
   </svg>`;
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
 export function generateDemoBuilders(count = 247): BuilderIdentity[] {
   const list: BuilderIdentity[] = [];
-  const accentColors = ['#00FF66', '#00E5FF', '#FFD600', '#FF2E63', '#A855F7'];
 
   for (let i = 0; i < count; i++) {
     const name = DEMO_NAMES[i % DEMO_NAMES.length] + (i >= DEMO_NAMES.length ? ` #${i + 1}` : '');
     const stack = STACK_GROUPS[i % STACK_GROUPS.length];
-    const mode = MODES[i % MODES.length];
-    const energy = ENERGIES[i % ENERGIES.length];
-    const color = accentColors[i % accentColors.length];
+    const color = ACCENT_COLORS[i % ACCENT_COLORS.length];
 
     const identity = createBuilderIdentity({
       name,
       photoUrl: createSampleAvatarSvg(name, color),
       stack,
-      buildMode: mode,
-      buildEnergy: energy,
+      xUsername: name.split(' ')[0].toLowerCase(),
       photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'RAW' },
+      seed: fnv1aHash(name + stack.join('')),
     });
 
-    // Calculate cluster position on constellation (radar)
-    // Cluster by primary stack category angle
+    // Calculate cluster position on the gallery map (clustered by primary stack)
     let angle = 0;
     const primaryStack = stack[0];
     switch (primaryStack) {
@@ -122,8 +80,8 @@ export function generateDemoBuilders(count = 247): BuilderIdentity[] {
         angle = (i / count) * Math.PI * 2;
     }
 
-    const radiusOffset = 80 + (i % 18) * 16 + (Math.sin(i * 3.7) * 40);
-    const spreadAngle = angle + (Math.cos(i * 1.3) * 0.45);
+    const radiusOffset = 80 + (i % 18) * 16 + Math.sin(i * 3.7) * 40;
+    const spreadAngle = angle + Math.cos(i * 1.3) * 0.45;
     const x = Math.cos(spreadAngle) * radiusOffset;
     const y = Math.sin(spreadAngle) * radiusOffset;
 
@@ -137,34 +95,26 @@ export function generateDemoBuilders(count = 247): BuilderIdentity[] {
 export const SAMPLE_BUILDERS: BuilderIdentity[] = [
   createBuilderIdentity({
     name: 'Mohammed Aadil',
-    photoUrl: createSampleAvatarSvg('Mohammed Aadil', '#00FF66'),
+    photoUrl: createSampleAvatarSvg('Mohammed Aadil', '#0B6B3A'),
     stack: ['AI', 'ROBOTICS', 'FULL STACK'],
-    buildMode: 'SHIP',
-    buildEnergy: 'EXPERIMENTAL',
-    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'MATRIX' },
+    xUsername: 'aadil',
+    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'VIVID' },
+    seed: fnv1aHash('Mohammed Aadil-ai'),
   }),
   createBuilderIdentity({
-    name: 'Ananya Iyer',
-    photoUrl: createSampleAvatarSvg('Ananya Iyer', '#00E5FF'),
+    name: 'Hameed Afsar KM',
+    photoUrl: createSampleAvatarSvg('Hameed Afsar KM', '#FF007A'),
     stack: ['FRONTEND', 'DESIGN', 'PRODUCT'],
-    buildMode: 'DESIGN',
-    buildEnergy: 'FAST',
-    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'DUOTONE' },
+    xUsername: 'hameedafsar',
+    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'WARM' },
+    seed: fnv1aHash('Hameed Afsar KM-frontend'),
   }),
   createBuilderIdentity({
-    name: 'Vikram Patel',
-    photoUrl: createSampleAvatarSvg('Vikram Patel', '#FFD600'),
-    stack: ['HARDWARE', 'ROBOTICS'],
-    buildMode: 'BREAK',
-    buildEnergy: 'RELENTLESS',
-    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'RAW' },
-  }),
-  createBuilderIdentity({
-    name: 'Siddharth Rao',
-    photoUrl: createSampleAvatarSvg('Siddharth Rao', '#FF2E63'),
+    name: 'Mohamed Shakeel',
+    photoUrl: createSampleAvatarSvg('Mohamed Shakeel', '#FFE600'),
     stack: ['BACKEND', 'CLOUD', 'CYBERSECURITY'],
-    buildMode: 'AUTOMATE',
-    buildEnergy: 'DEEP',
-    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'SIGNAL' },
+    xUsername: 'shakeel',
+    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'DARK' },
+    seed: fnv1aHash('Mohamed Shakeel-backend'),
   }),
 ];

@@ -1,14 +1,29 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { BuilderIdentity } from '@/types/dna';
+import { BuilderIdentity } from '@/types/builder';
 
-interface ConstellationCanvasProps {
+interface GalleryMapCanvasProps {
   builders: BuilderIdentity[];
   onSelectBuilder: (builder: BuilderIdentity) => void;
 }
 
-export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
+const NODE_COLORS: Array<{ match: (b: BuilderIdentity) => boolean; color: string }> = [
+  { match: (b) => b.stack.includes('AI'), color: '#FF007A' },
+  { match: (b) => b.stack.includes('HARDWARE') || b.stack.includes('ROBOTICS'), color: '#FFE600' },
+  { match: (b) => b.stack.includes('CRYPTO'), color: '#FF007A' },
+  { match: (b) => b.stack.includes('DESIGN'), color: '#2EC4B6' },
+  { match: (b) => b.stack.includes('BACKEND') || b.stack.includes('CLOUD'), color: '#FFFFFF' },
+];
+
+function nodeColor(b: BuilderIdentity): string {
+  for (const rule of NODE_COLORS) {
+    if (rule.match(b)) return rule.color;
+  }
+  return '#FFE600';
+}
+
+export const GalleryMapCanvas: React.FC<GalleryMapCanvasProps> = ({
   builders,
   onSelectBuilder,
 }) => {
@@ -36,7 +51,6 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
     const centerX = width / 2;
     const centerY = height / 2;
 
-    // Convert relative cluster positions to screen coordinates
     const nodes = builders.map((b) => {
       const px = centerX + (b.clusterPos?.x || 0);
       const py = centerY + (b.clusterPos?.y || 0);
@@ -46,7 +60,7 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
         y: py,
         baseX: px,
         baseY: py,
-        radius: 4,
+        radius: 7,
         pulseOffset: Math.random() * Math.PI * 2,
       };
     });
@@ -62,7 +76,7 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
       for (const node of nodes) {
         const dx = node.x - mx;
         const dy = node.y - my;
-        if (Math.sqrt(dx * dx + dy * dy) < 14) {
+        if (Math.sqrt(dx * dx + dy * dy) < 20) {
           found = node;
           break;
         }
@@ -80,7 +94,7 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
       for (const node of nodes) {
         const dx = node.x - mx;
         const dy = node.y - my;
-        if (Math.sqrt(dx * dx + dy * dy) < 14) {
+        if (Math.sqrt(dx * dx + dy * dy) < 20) {
           onSelectBuilder(node.builder);
           break;
         }
@@ -94,30 +108,32 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
 
     const render = () => {
       time += 0.02;
-      ctx.fillStyle = '#050506';
+      // Deep Forest Green background matching Screenshot 4 & 5
+      ctx.fillStyle = '#064E29';
       ctx.fillRect(0, 0, width, height);
 
-      // Radar rings
-      ctx.strokeStyle = '#18181B';
-      ctx.lineWidth = 1;
-      for (let r = 100; r < 450; r += 100) {
+      // White outline wave rings
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.lineWidth = 1.5;
+      for (let r = 110; r < 460; r += 110) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
         ctx.stroke();
       }
 
       // Crosshair
-      ctx.setLineDash([4, 8]);
+      ctx.setLineDash([6, 8]);
+      ctx.strokeStyle = 'rgba(255, 230, 0, 0.2)';
       ctx.beginPath();
       ctx.moveTo(centerX, 0); ctx.lineTo(centerX, height);
       ctx.moveTo(0, centerY); ctx.lineTo(width, centerY);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Draw connections between builders in similar stack
-      ctx.lineWidth = 0.5;
+      // Connection lines
+      ctx.lineWidth = 1;
       for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j += 6) {
+        for (let j = i + 1; j < nodes.length; j += 5) {
           const n1 = nodes[i];
           const n2 = nodes[j];
           const hasCommonStack = n1.builder.stack.some((s) => n2.builder.stack.includes(s));
@@ -126,8 +142,8 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
             const dy = n1.y - n2.y;
             const dist = Math.sqrt(dx * dx + dy * dy);
             if (dist < 160) {
-              const alpha = (1 - dist / 160) * 0.15;
-              ctx.strokeStyle = `rgba(0, 255, 102, ${alpha})`;
+              const alpha = (1 - dist / 160) * 0.25;
+              ctx.strokeStyle = `rgba(255, 230, 0, ${alpha})`;
               ctx.beginPath();
               ctx.moveTo(n1.x, n1.y);
               ctx.lineTo(n2.x, n2.y);
@@ -137,36 +153,42 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
         }
       }
 
-      // Render Nodes
+      // Render island nodes
       nodes.forEach((node) => {
         const isHovered = hoverNode === node;
-        const pulse = Math.sin(time * 2 + node.pulseOffset) * 1.5;
-        const r = isHovered ? 8 : node.radius + pulse * 0.3;
+        const pulse = Math.sin(time * 2.5 + node.pulseOffset) * 1.5;
+        const r = isHovered ? 12 : node.radius + pulse * 0.4;
+        const color = nodeColor(node.builder);
 
-        // Color based on primary stack
-        let nodeColor = '#00FF66';
-        if (node.builder.stack.includes('AI')) nodeColor = '#00E5FF';
-        else if (node.builder.stack.includes('HARDWARE')) nodeColor = '#FFD600';
-        else if (node.builder.stack.includes('CRYPTO')) nodeColor = '#A855F7';
-        else if (node.builder.stack.includes('DESIGN')) nodeColor = '#FF2E63';
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r + 4, 0, Math.PI * 2);
+        ctx.globalAlpha = 0.25;
+        ctx.fill();
+        ctx.globalAlpha = 1;
 
-        ctx.fillStyle = nodeColor;
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = color;
         ctx.fill();
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
 
         if (isHovered) {
-          ctx.strokeStyle = '#FFFFFF';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.arc(node.x, node.y, r + 4, 0, Math.PI * 2);
-          ctx.stroke();
-
-          // Label tooltip
-          ctx.fillStyle = '#FFFFFF';
           ctx.font = 'bold 12px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(node.builder.name.toUpperCase(), node.x, node.y - 14);
+          ctx.textAlign = 'left';
+          const label = node.builder.name.toUpperCase();
+          const tw = ctx.measureText(label).width;
+
+          // Tooltip card
+          ctx.fillStyle = '#FBF6E9';
+          ctx.beginPath();
+          ctx.roundRect(node.x + 18, node.y - 14, tw + 20, 28, 14);
+          ctx.fill();
+
+          ctx.fillStyle = '#1A2E22';
+          ctx.fillText(label, node.x + 28, node.y + 4);
         }
       });
 
@@ -184,13 +206,20 @@ export const ConstellationCanvas: React.FC<ConstellationCanvasProps> = ({
   }, [builders, onSelectBuilder]);
 
   return (
-    <div className="relative w-full border border-zinc-800 bg-zinc-950 overflow-hidden">
+    <div className="relative w-full rounded-2xl border-2 border-white/20 overflow-hidden shadow-2xl">
       <canvas ref={canvasRef} className="w-full cursor-pointer block" />
       {hoveredBuilder && (
-        <div className="absolute top-4 left-4 bg-black/90 border border-[#00FF66] p-3 font-mono text-xs text-white pointer-events-none space-y-1">
-          <div className="text-[#00FF66] font-bold">{hoveredBuilder.name}</div>
-          <div className="text-zinc-300">{hoveredBuilder.title}</div>
-          <div className="text-[10px] text-zinc-500">{hoveredBuilder.dnaHash}</div>
+        <div className="absolute top-4 left-4 pinned-card pin-top-pink p-4 font-mono text-xs font-bold pointer-events-none space-y-1.5 max-w-[260px] shadow-2xl">
+          <div className="text-[#1A2E22] font-extrabold text-sm">{hoveredBuilder.name}</div>
+          <div className="text-[#FF007A] font-bold">{hoveredBuilder.title}</div>
+          <div className="text-[11px] text-[#1A2E22]/60 font-mono">BUILDER #{hoveredBuilder.builderNumber}</div>
+          <div className="flex flex-wrap gap-1 pt-1">
+            {hoveredBuilder.stack.map((st) => (
+              <span key={st} className="bg-[#FF007A] text-white px-2 py-0.5 rounded-full text-[10px]">
+                {st}
+              </span>
+            ))}
+          </div>
         </div>
       )}
     </div>

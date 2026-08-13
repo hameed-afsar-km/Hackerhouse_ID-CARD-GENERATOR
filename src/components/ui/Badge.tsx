@@ -9,15 +9,15 @@ interface BadgeProps {
 }
 
 export const Badge: React.FC<BadgeProps> = ({ variant = 'green', children, className }) => {
-  const base = 'inline-flex items-center font-mono text-xs font-bold px-2.5 py-1 tracking-widest uppercase border';
+  const base = 'inline-flex items-center font-sans text-xs font-bold px-3 py-1 tracking-wider uppercase rounded-full shadow-xs border border-transparent';
 
   const variants = {
-    green: 'bg-[#00FF66]/10 text-[#00FF66] border-[#00FF66]/40',
-    cyan: 'bg-[#00E5FF]/10 text-[#00E5FF] border-[#00E5FF]/40',
-    yellow: 'bg-[#FFD600]/10 text-[#FFD600] border-[#FFD600]/40',
-    pink: 'bg-[#FF2E63]/10 text-[#FF2E63] border-[#FF2E63]/40',
-    outline: 'bg-transparent text-zinc-300 border-zinc-700',
-    dark: 'bg-zinc-900 text-zinc-400 border-zinc-800',
+    green: 'bg-primary-green/10 text-primary-green border-primary-green/20',
+    cyan: 'bg-sea-green/10 text-primary-green border-sea-green/20',
+    yellow: 'bg-yellow text-ink border-yellow/40',
+    pink: 'bg-pink/10 text-pink border-pink/20',
+    outline: 'bg-white/80 text-ink border-primary-green/20',
+    dark: 'bg-ink text-cream',
   };
 
   return <span className={twMerge(clsx(base, variants[variant], className))}>{children}</span>;

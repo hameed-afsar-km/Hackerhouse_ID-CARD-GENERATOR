@@ -1,12 +1,31 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Inter, Bricolage_Grotesque, Geist_Mono, Noto_Sans_Devanagari, Imbue, Rozha_One } from 'next/font/google';
 import './globals.css';
 import { Navbar } from '@/components/ui/Navbar';
 import { Footer } from '@/components/ui/Footer';
+import { SplashScreen } from '@/components/ui/SplashScreen';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const inter = Inter({
+  variable: '--font-inter',
   subsets: ['latin'],
+});
+
+const imbue = Imbue({
+  variable: '--font-imbue',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+});
+
+const rozha = Rozha_One({
+  variable: '--font-rozha',
+  subsets: ['devanagari', 'latin'],
+  weight: ['400'],
+});
+
+const bricolage = Bricolage_Grotesque({
+  variable: '--font-bricolage',
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
 });
 
 const geistMono = Geist_Mono({
@@ -14,30 +33,37 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const devanagari = Noto_Sans_Devanagari({
+  variable: '--font-noto-devanagari',
+  subsets: ['devanagari'],
+  weight: ['500', '700', '800', '900'],
+});
+
 export const metadata: Metadata = {
-  title: 'BUILD DNA — Hacker House Goa 2026',
+  title: 'HH GOA 2026 — Builder ID & Profile Frame Generator',
   description:
-    'A generative identity engine that turns a builder photo, stack, and build personality into a unique Hacker House Goa 2026 Builder Identity.',
+    'Generate your official Hacker House Goa 2026 Builder ID Card & Profile Frame. One upload turns you into an official HH Goa 2026 Builder. #FrameInGoa',
   keywords: [
     'Hacker House Goa',
     'HH Goa 2026',
-    'Builder DNA',
+    'Builder ID',
+    'Profile Frame',
     'Goa India',
     'FrameInGoa',
-    'Generative Art',
-    'Builder ID',
+    'Builder Pass',
+    'ID Card Generator',
   ],
   openGraph: {
-    title: 'BUILD DNA — Hacker House Goa 2026',
-    description: 'Turn your stack and build energy into a unique Hacker House Goa 2026 Builder Identity.',
+    title: 'HH GOA 2026 — Builder ID & Profile Frame Generator',
+    description: 'Claim your official Hacker House Goa 2026 Builder ID & Profile Frame. #FrameInGoa',
     url: 'https://hhgoa.com',
-    siteName: 'BUILD DNA',
+    siteName: 'HH GOA 2026',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BUILD DNA — Hacker House Goa 2026',
-    description: 'Turn your stack and build energy into a unique Builder Identity. #FrameInGoa',
+    title: 'HH GOA 2026 — Builder ID & Profile Frame Generator',
+    description: 'Claim your official Builder ID & Profile Frame. #FrameInGoa',
   },
 };
 
@@ -47,8 +73,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}>
-      <body className="bg-[#050506] text-white min-h-full flex flex-col font-mono selection:bg-[#00FF66] selection:text-black">
+    <html lang="en" className={`${inter.variable} ${imbue.variable} ${rozha.variable} ${bricolage.variable} ${geistMono.variable} ${devanagari.variable} h-full antialiased`}>
+      <body className="bg-[#0B6B3A] text-[#FBF6E9] min-h-full flex flex-col font-mono selection:bg-[#FF007A] selection:text-white">
+        <SplashScreen />
         <Navbar />
         <div className="flex-1">{children}</div>
         <Footer />

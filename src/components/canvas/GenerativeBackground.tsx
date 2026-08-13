@@ -54,7 +54,7 @@ export const GenerativeBackground: React.FC<GenerativeBackgroundProps> = ({
       color: string;
     }> = [];
 
-    const colors = ['#00FF66', '#00E5FF', '#FFD600', '#27272A', '#3F3F46'];
+    const colors = ['#00E04F', '#00E5FF', '#FFD600', '#E7DFCB', '#C8C1B0'];
 
     for (let i = 0; i < density; i++) {
       particles.push({
@@ -71,13 +71,14 @@ export const GenerativeBackground: React.FC<GenerativeBackgroundProps> = ({
     let gridOffset = 0;
 
     const render = () => {
-      ctx.fillStyle = '#050506';
+      ctx.fillStyle = '#F2EDE1';
       ctx.fillRect(0, 0, width, height);
 
-      // Render subtle tactical grid
+      // Render subtle raw grid
       gridOffset = (gridOffset + 0.15) % 40;
-      ctx.strokeStyle = '#121215';
+      ctx.strokeStyle = '#101010';
       ctx.lineWidth = 1;
+      ctx.globalAlpha = 0.08;
 
       for (let x = 0; x < width; x += 40) {
         ctx.beginPath();
@@ -92,6 +93,7 @@ export const GenerativeBackground: React.FC<GenerativeBackgroundProps> = ({
         ctx.lineTo(width, y);
         ctx.stroke();
       }
+      ctx.globalAlpha = 1;
 
       // Update & Draw Particles
       particles.forEach((p, idx) => {
@@ -118,7 +120,7 @@ export const GenerativeBackground: React.FC<GenerativeBackgroundProps> = ({
 
           if (dist < 150) {
             const alpha = (1 - dist / 150) * 0.25;
-            ctx.strokeStyle = `rgba(0, 255, 102, ${alpha})`;
+            ctx.strokeStyle = `rgba(16, 16, 16, ${alpha})`;
             ctx.lineWidth = 0.7;
             ctx.beginPath();
             ctx.moveTo(p.x, p.y);
@@ -140,8 +142,7 @@ export const GenerativeBackground: React.FC<GenerativeBackgroundProps> = ({
             ctx.moveTo(p.x, p.y);
             ctx.lineTo(mouse.x, mouse.y);
             ctx.stroke();
-          }
-        }
+          }        }
       });
 
       animationFrameId = requestAnimationFrame(render);

@@ -1,20 +1,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Terminal, ShieldCheck } from 'lucide-react';
+import { Sparkles, CheckCircle2 } from 'lucide-react';
 
 interface GenerationAnimationProps {
   onComplete: () => void;
 }
 
 const MESSAGES = [
-  'DECODING BUILDER...',
-  'READING STACK...',
-  'READING BUILD MODE...',
-  'GENERATING DNA SEED...',
-  'ASSIGNING CLASS...',
-  'ESTABLISHING SIGNAL...',
-  'SIGNAL LOCKED.',
+  'SETTING FRAME BOUNDS',
+  'PROCESSING PHOTO',
+  'ROLLING BUILDER TITLE',
+  'CALCULATING BUILD STATS',
+  'STAMPING BUILDER NUMBER',
+  'PASS & FRAME READY!',
 ];
 
 export const GenerationAnimation: React.FC<GenerationAnimationProps> = ({ onComplete }) => {
@@ -26,72 +25,71 @@ export const GenerationAnimation: React.FC<GenerationAnimationProps> = ({ onComp
       const timer = setTimeout(() => {
         setLogs((prev) => [...prev, MESSAGES[currentStep]]);
         setCurrentStep((prev) => prev + 1);
-      }, 240);
+      }, 260);
 
       return () => clearTimeout(timer);
     } else {
       const finalTimer = setTimeout(() => {
         onComplete();
-      }, 400);
+      }, 500);
       return () => clearTimeout(finalTimer);
     }
   }, [currentStep, onComplete]);
 
-  return (
-    <div className="fixed inset-0 z-50 bg-[#050506] flex items-center justify-center p-4">
-      {/* Background scanline effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(#00FF66_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none" />
+  const done = currentStep >= MESSAGES.length;
 
-      <div className="w-full max-w-lg bg-zinc-950 border-2 border-[#00FF66] p-6 shadow-[8px_8px_0px_0px_#00FF66] relative space-y-6">
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-3 font-mono text-xs text-zinc-400">
-          <span className="flex items-center gap-2 text-[#00FF66] font-bold">
-            <Terminal className="w-4 h-4" />
-            BUILD DNA ENGINE // HASHING
-          </span>
-          <span className="animate-pulse text-zinc-500">28—31 OCT 2026</span>
+  return (
+    <div className="fixed inset-0 z-50 bg-cream/90 backdrop-blur-md flex items-center justify-center p-4">
+      <div className="w-full max-w-lg hh-card p-8 space-y-6 shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-2 bg-pink/10 text-pink px-4 py-1.5 font-sans text-xs font-bold uppercase tracking-wider rounded-full">
+            <Sparkles className="w-4 h-4" /> GENERATING BUILDER IDENTITY
+          </div>
+          <h2 className="font-display font-extrabold text-4xl text-ink tracking-tight uppercase">
+            {done ? (
+              <span>IDENTITY <span className="text-sea-green">READY</span></span>
+            ) : (
+              <span>STAMPING <span className="text-pink">PASS</span></span>
+            )}
+          </h2>
         </div>
 
-        {/* Console Log Lines */}
-        <div className="bg-black border border-zinc-900 p-4 font-mono text-sm space-y-2 h-56 overflow-y-auto">
-          {logs.map((log, idx) => {
-            const isLast = idx === logs.length - 1;
-            const isDone = log === 'SIGNAL LOCKED.';
+        {/* Step list */}
+        <div className="space-y-2">
+          {MESSAGES.map((msg, idx) => {
+            const shown = idx < logs.length;
+            const isDoneLine = shown && msg === 'PASS & FRAME READY!';
             return (
-              <div key={idx} className="flex items-center gap-2">
-                <span className="text-zinc-600 text-xs">[{idx + 1}]</span>
-                <span className={isDone ? 'text-[#00FF66] font-extrabold text-base' : 'text-zinc-300'}>
-                  {log}
-                </span>
-                {isLast && !isDone && (
-                  <span className="inline-block w-2 h-4 bg-[#00FF66] animate-ping ml-1" />
-                )}
+              <div
+                key={idx}
+                className={`px-4 py-3 font-sans text-xs font-bold rounded-2xl transition-all flex items-center justify-between ${
+                  isDoneLine
+                    ? 'bg-sea-green text-white shadow-xs'
+                    : shown
+                    ? 'bg-primary-green/10 text-primary-green'
+                    : 'bg-cream/40 text-ink/30'
+                }`}
+              >
+                <span>{msg}</span>
+                {shown && <CheckCircle2 className="w-4 h-4 text-sea-green inline" />}
               </div>
             );
           })}
         </div>
 
-        {/* Progress Bar */}
-        <div className="space-y-2 font-mono text-xs">
-          <div className="flex justify-between text-zinc-400">
-            <span>SYNTHESIZING MATRIX</span>
-            <span className="text-[#00FF66] font-bold">
-              {Math.min(100, Math.round((currentStep / MESSAGES.length) * 100))}%
-            </span>
+        {/* Progress bar */}
+        <div className="space-y-2 font-sans text-xs font-bold">
+          <div className="flex justify-between text-ink/60">
+            <span>COMPLETION</span>
+            <span>{Math.min(100, Math.round((currentStep / MESSAGES.length) * 100))}%</span>
           </div>
-          <div className="w-full h-3 bg-zinc-900 border border-zinc-800 p-0.5">
+          <div className="w-full h-3 bg-cream rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#00FF66] transition-all duration-200"
+              className="h-full bg-pink transition-all duration-200"
               style={{ width: `${(currentStep / MESSAGES.length) * 100}%` }}
             />
           </div>
         </div>
-
-        {currentStep >= MESSAGES.length && (
-          <div className="flex items-center justify-center gap-2 text-[#00FF66] font-mono text-xs font-bold uppercase tracking-widest pt-2">
-            <ShieldCheck className="w-4 h-4" />
-            BUILDER IDENTITY GENERATED
-          </div>
-        )}
       </div>
     </div>
   );

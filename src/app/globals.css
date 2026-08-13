@@ -1,43 +1,358 @@
+@import url('https://fonts.googleapis.com/css2?family=Imbue:opsz,wght@10..120,400..900&family=Rozha+One&family=Noto+Serif+Devanagari:wght@700;900&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #050506;
-  --foreground: #ffffff;
-  --signal-green: #00FF66;
-  --cyber-cyan: #00E5FF;
-  --signal-yellow: #FFD600;
-  --signal-pink: #FF2E63;
+  --background: #0B6B3A;
+  --dark-green: #064E29;
+  --cream: #FBF6E9;
+  --cream-card: #FAF4E5;
+  --yellow: #FFE600;
+  --pink: #FF007A;
+  --sea-green: #2EC4B6;
+  --white: #FFFFFF;
+  --ink: #1A2E22;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
+  --color-foreground: var(--cream);
+  --color-dark-green: var(--dark-green);
+  --color-primary-green: #0B6B3A;
+  --color-cream: var(--cream);
+  --color-cream-card: var(--cream-card);
+  --color-yellow: var(--yellow);
+  --color-pink: var(--pink);
+  --color-sea-green: var(--sea-green);
+  --color-white: var(--white);
+  --color-ink: var(--ink);
+  --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-imbue), "Imbue", var(--font-bricolage), "Playfair Display", serif;
+  --font-mono: var(--font-geist-mono), "Courier New", monospace;
+  --font-devanagari: var(--font-rozha), var(--font-noto-devanagari), "Rozha One", "Noto Serif Devanagari", serif;
 }
 
 body {
-  background-color: #050506;
-  color: #ffffff;
+  background-color: #0B6B3A;
+  color: var(--cream);
+  font-family: var(--font-geist-mono), "Courier New", monospace;
+  overflow-x: clip;
+}
+
+/* ------------------------------------------------------------------ */
+/* HH GOA EXACT STYLING & PAPER CARD SYSTEM                           */
+/* ------------------------------------------------------------------ */
+
+/* Paper notice board card */
+.paper-card {
+  background-color: #FBF6E9;
+  color: #1A2E22;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+/* Generic HH Goa card surface (cream, rounded) */
+.hh-card {
+  background-color: #FBF6E9;
+  color: #1A2E22;
+  border-radius: 20px;
+}
+
+/* ------------------------------------------------------------------ */
+/* HERO ANIMATIONS                                                     */
+/* ------------------------------------------------------------------ */
+
+/* Gentle bobbing for the floating ID cards */
+@keyframes hh-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+.animate-hh-float {
+  animation: hh-float 6s ease-in-out infinite;
+}
+
+/* Slow palm-tree sway in the breeze */
+@keyframes hh-sway {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2.5deg); }
+}
+.animate-hh-sway {
+  animation: hh-sway 9s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Seamless scrolling marquee ticker strip */
+@keyframes hh-marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-hh-marquee {
+  animation: hh-marquee 20s linear infinite;
+}
+
+/* Expanding pulse ring around the QR badge */
+@keyframes hh-qr-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 230, 0, 0.55); }
+  70% { box-shadow: 0 0 0 16px rgba(255, 230, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 230, 0, 0); }
+}
+.animate-hh-qr-pulse {
+  animation: hh-qr-pulse 2.6s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hh-float,
+  .animate-hh-sway,
+  .animate-hh-marquee,
+  .animate-hh-qr-pulse {
+    animation: none;
+  }
+}
+
+/* Pinned paper card effect with top circular pin */
+.pinned-card {
+  background-color: #FBF6E9;
+  color: #1A2E22;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18);
+  position: relative;
+}
+
+.pin-top-pink::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background-color: #FF007A;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.pin-top-yellow::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  background-color: #FFE600;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+/* Hot pink pill button */
+.pink-pill-btn {
+  background-color: #FF007A;
+  color: #FFFFFF;
+  border-radius: 9999px;
   font-family: var(--font-geist-mono), monospace;
-  overflow-x: hidden;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.pink-pill-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(255, 0, 122, 0.4);
 }
 
-/* Custom Tactical Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* Yellow pill button */
+.yellow-pill-btn {
+  background-color: #FFE600;
+  color: #1A2E22;
+  border-radius: 9999px;
+  font-family: var(--font-geist-mono), monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.yellow-pill-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 20px rgba(255, 230, 0, 0.4);
+}
+
+/* Visible range slider with a proper track line and thumb */
+.slider-line {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
   height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+.slider-line::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FBF6E9;
+  border: 5px solid var(--accent, #FF007A);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+  margin-top: -8px;
+  transition: transform 0.15s ease;
+}
+.slider-line::-webkit-slider-thumb:hover {
+  transform: scale(1.12);
+}
+.slider-line::-webkit-slider-thumb:active {
+  cursor: grabbing;
+}
+.slider-line::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #FBF6E9;
+  border: 5px solid var(--accent, #FF007A);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: grab;
+}
+.slider-line::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: transparent;
+}
+.slider-line::-moz-range-progress {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--accent, #FF007A);
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
 ::-webkit-scrollbar-track {
-  background: #050506;
+  background: #0B6B3A;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #27272A;
-  border: 1px solid #00FF66;
+  background: #FFE600;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF007A;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #00FF66;
+/* ------------------------------------------------------------------ */
+/* MODERN REDESIGN — splash, aurora, press states                      */
+/* ------------------------------------------------------------------ */
+
+/* Slow rotating dashed ring (hero preview stage) */
+@keyframes hh-spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.animate-hh-spin-slow {
+  animation: hh-spin-slow 24s linear infinite;
+}
+
+/* Seamless horizontal wave layers lapping the island shore */
+@keyframes hh-wave {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-hh-wave {
+  animation: hh-wave 16s linear infinite;
+  will-change: transform;
+}
+
+/* ------------------------------------------------------------------ */
+/* SCROLL-DRIVEN ANIMATIONS (animation-timeline)                       */
+/* ------------------------------------------------------------------ */
+
+@keyframes hh-reveal-up {
+  from { opacity: 0; transform: translateY(48px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hh-parallax {
+  from { transform: translateY(0); }
+  to { transform: translateY(-90px); }
+}
+
+@keyframes hh-scroll-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
+@supports (animation-timeline: view()) {
+  /* Elements reveal as they enter the viewport */
+  .hh-scroll-reveal {
+    animation: hh-reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 100%;
+  }
+
+  /* Elements drift slower than the page (parallax) */
+  .hh-scroll-parallax {
+    animation: hh-parallax linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0% 45%;
+  }
+
+  /* Fixed progress bar that fills with page scroll */
+  .hh-scroll-progress {
+    animation: hh-scroll-progress linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+/* Slow drifting aurora blobs behind the hero */
+@keyframes hh-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -50px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.94); }
+}
+.animate-hh-drift {
+  animation: hh-drift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Splash screen logo entrance + loading bar */
+@keyframes hh-splash-bar {
+  0% { width: 0%; }
+  55% { width: 74%; }
+  100% { width: 100%; }
+}
+.animate-hh-splash-bar {
+  animation: hh-splash-bar 1.1s ease-in-out forwards;
+}
+
+/* Button press feedback */
+.pink-pill-btn:active,
+.yellow-pill-btn:active {
+  transform: scale(0.96);
+}
+
+/* Stat tile hover glow */
+.stat-tile {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.stat-tile:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-hh-drift,
+  .animate-hh-spin-slow,
+  .animate-hh-wave,
+  .animate-hh-splash-bar {
+    animation: none;
+  }
+  .hh-scroll-reveal,
+  .hh-scroll-parallax,
+  .hh-scroll-progress {
+    animation: none;
+  }
 }

@@ -1,16 +1,16 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { BuilderIdentity } from '@/types/dna';
-import { drawBuilderDNAIdentity, CANVAS_WIDTH, CANVAS_HEIGHT } from '@/lib/canvas-helpers';
+import { BuilderIdentity } from '@/types/builder';
+import { drawBuilderCard, CANVAS_WIDTH, CANVAS_HEIGHT } from '@/lib/canvas-helpers';
 
-interface DNAIdentityCanvasProps {
+interface BuilderCardCanvasProps {
   builder: BuilderIdentity;
   className?: string;
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
 }
 
-export const DNAIdentityCanvas: React.FC<DNAIdentityCanvasProps> = ({
+export const BuilderCardCanvas: React.FC<BuilderCardCanvasProps> = ({
   builder,
   className,
   onCanvasReady,
@@ -21,7 +21,7 @@ export const DNAIdentityCanvas: React.FC<DNAIdentityCanvasProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    drawBuilderDNAIdentity(canvas, builder).then(() => {
+    drawBuilderCard(canvas, builder).then(() => {
       if (onCanvasReady) {
         onCanvasReady(canvas);
       }
@@ -29,12 +29,12 @@ export const DNAIdentityCanvas: React.FC<DNAIdentityCanvasProps> = ({
   }, [builder, onCanvasReady]);
 
   return (
-    <div className={`relative max-w-full overflow-hidden bg-black ${className || ''}`}>
+    <div className={`relative max-w-full overflow-hidden rounded-2xl ${className || ''}`}>
       <canvas
         ref={canvasRef}
         width={CANVAS_WIDTH}
         height={CANVAS_HEIGHT}
-        className="w-full h-auto block border border-zinc-800 shadow-[0_0_30px_rgba(0,0,0,0.8)]"
+        className="w-full h-auto block rounded-2xl"
       />
     </div>
   );

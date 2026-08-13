@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Public builder photos - readable by everyone.
+    // A user may only write to their OWN photo slot, max 2MB.
+    // create+update (not delete) so a failed claim can be retried.
+    match /builders/{uid}/photo {
+      allow read: if true;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 2 * 1024 * 1024;
+      allow delete: if false;
+    }
+  }
+}
