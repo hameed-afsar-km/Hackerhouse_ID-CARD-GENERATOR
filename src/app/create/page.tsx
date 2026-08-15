@@ -3,7 +3,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
-import { ArrowRight, ArrowLeft, Check, User, Code, Eye, Sparkles, AtSign, ShieldCheck, RefreshCw } from 'lucide-react';
+import { signOut } from 'firebase/auth';
+import { ArrowRight, ArrowLeft, Check, User, Code, Eye, Sparkles, AtSign, ShieldCheck, RefreshCw, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PhotoUploader } from '@/components/creation/PhotoUploader';
 import { StackSelector } from '@/components/creation/StackSelector';
@@ -307,7 +308,7 @@ export default function CreatePage() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Mohammed Aadil"
+                    placeholder="e.g. Hameed Afsar KM"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-[#FBF6E9] border-2 border-[#1A2E22]/20 focus:border-[#FF007A] text-[#1A2E22] px-5 py-4 font-mono text-lg font-bold rounded-2xl outline-none transition-all placeholder:text-[#1A2E22]/40"
@@ -323,7 +324,7 @@ export default function CreatePage() {
                     <AtSign className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-[#1A2E22]/40" />
                     <input
                       type="text"
-                      placeholder="e.g. aadil"
+                      placeholder="e.g. hameedafsar"
                       value={xUsername}
                       onChange={(e) => setXUsername(e.target.value)}
                       onKeyDown={(e) => {
@@ -371,19 +372,48 @@ export default function CreatePage() {
                     <span className="font-bold text-[#1A2E22]/50">ACCESS CODE</span>
                     <span className="font-extrabold tracking-wider">{formatClaimCode(liveIdentity.claimCode)}</span>
                   </div>
+                  <div className="flex justify-between border-b border-[#1A2E22]/10 pb-2">
+                    <span className="font-bold text-[#1A2E22]/50">CARD THEME</span>
+                    <span className="font-extrabold text-[#0B6B3A]">{photoSettings.cardTheme || 'TROPICAL'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-[#1A2E22]/10 pb-2">
+                    <span className="font-bold text-[#1A2E22]/50">FRAME OVERLAY</span>
+                    <span className="font-extrabold text-[#FF007A]">{photoSettings.frameStyle || 'WREATH'}</span>
+                  </div>
                   <div className="flex justify-between">
                     <span className="font-bold text-[#1A2E22]/50">PHOTO</span>
                     <span className="font-extrabold">{photoUrl ? 'UPLOADED' : 'AUTO AVATAR'}</span>
                   </div>
                 </div>
 
-                {!user && (
+                {!user ? (
                   <AuthPanel
                     onAuthed={(u) => {
                       setUser(u);
                       setMintError(null);
                     }}
                   />
+                ) : (
+                  <div className="flex items-center justify-between bg-[#FBF6E9] p-4 rounded-2xl border-2 border-[#1A2E22]/15 font-mono text-xs">
+                    <div className="flex items-center gap-2 font-bold text-[#1A2E22] truncate max-w-[70%]">
+                      <ShieldCheck className="w-4 h-4 text-[#0B6B3A] shrink-0" />
+                      <span className="truncate">CONNECTED: <strong className="text-[#FF007A]">{user.email || user.displayName || 'AUTHENTICATED'}</strong></span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await signOut(getClientAuth());
+                          setUser(null);
+                        } catch (e) {
+                          console.error('Logout error', e);
+                        }
+                      }}
+                      className="flex items-center gap-1.5 font-bold text-[#FF007A] hover:text-[#1A2E22] transition-colors shrink-0"
+                    >
+                      <LogOut className="w-3.5 h-3.5" /> LOG OUT
+                    </button>
+                  </div>
                 )}
 
                 {user && hasExisting && (
@@ -441,7 +471,7 @@ export default function CreatePage() {
           </div>
 
           {/* Right Column: Live Preview Card (5 cols) */}
-          <div className="lg:col-span-6 pinned-card pin-top-yellow p-4 sm:p-5 space-y-3 shadow-2xl sticky top-16 -mt-2">
+          <div className="lg:col-span-6 pinned-card pin-top-yellow p-4 sm:p-5 space-y-3 shadow-2xl sticky top-16 -mt-14">
             <div className="flex items-center justify-between font-mono text-xs font-bold text-[#1A2E22] border-b border-[#1A2E22]/10 pb-2.5">
               <span className="flex items-center gap-2 text-[#FF007A]">
                 <Eye className="w-4 h-4" /> LIVE CARD PREVIEW
@@ -452,7 +482,7 @@ export default function CreatePage() {
             </div>
 
             {/* Real-time updating Card Canvas */}
-            <div className="rounded-2xl overflow-hidden shadow-sm border border-[#1A2E22]/20 max-w-[420px] mx-auto">
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-[#1A2E22]/20 w-full max-w-[500px] mx-auto">
               <BuilderCardCanvas builder={liveIdentity} />
             </div>
 

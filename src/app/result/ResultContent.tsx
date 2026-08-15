@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Download, Share2, RefreshCw, Radio, ShieldCheck, Check, Sparkles, Layers, Image as ImageIcon, AtSign, Camera, Send } from 'lucide-react';
+import { Download, RefreshCw, Radio, ShieldCheck, Check, Sparkles, Layers, Image as ImageIcon, Camera, Send } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { BuilderIdentity, PublicBuilder } from '@/types/builder';
 import { BuilderCardCanvas } from '@/components/canvas/BuilderCardCanvas';
@@ -194,11 +194,6 @@ See you in Goa — 28-31 Oct 2026.
     window.open(shareUrl, '_blank', 'noopener,noreferrer');
   };
 
-  const handleShareToLinkedIn = () => {
-    const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(builderLink)}`;
-    window.open(shareUrl, '_blank', 'noopener,noreferrer');
-  };
-
   const handleCopyCaption = () => {
     const text = `${captionFor()}\n\nLink: ${builderLink}`;
     navigator.clipboard.writeText(text);
@@ -313,21 +308,34 @@ See you in Goa — 28-31 Oct 2026.
           </div>
 
           {/* Social Share Buttons */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
             <Button size="md" variant="ink" onClick={handleShareImage} className="w-full" disabled={downloading}>
               <Send className="w-4 h-4" /> SHARE PNG
             </Button>
 
-            <Button size="md" variant="outline" onClick={handleShareToX} className="w-full border-2 border-white text-white">
-              <Share2 className="w-4 h-4" /> SHARE TO X
+            {/* X */}
+            <Button
+              size="md"
+              variant="outline"
+              onClick={handleShareToX}
+              disabled={downloading}
+              className="group w-full bg-white text-[#1A2E22] border-2 border-white hover:bg-black hover:text-white hover:border-black hover:shadow-lg"
+            >
+              <span className="grid place-items-center w-5 h-5 rounded bg-black text-white text-[10px] font-black transition-colors group-hover:bg-white group-hover:text-black">
+                X
+              </span>
+              SHARE TO X
             </Button>
 
-            <Button size="md" variant="outline" onClick={handleShareToLinkedIn} className="w-full border-2 border-white text-white">
-              <AtSign className="w-4 h-4" /> LINKEDIN
-            </Button>
-
-            <Button size="md" variant="outline" onClick={handleCopyCaption} className="w-full border-2 border-white text-white">
-              <Camera className="w-4 h-4 text-[#FF007A]" />
+            {/* Copy caption */}
+            <Button
+              size="md"
+              variant="outline"
+              onClick={handleCopyCaption}
+              disabled={downloading}
+              className="w-full bg-[#FFE600] text-[#1A2E22] border-2 border-[#FFE600] hover:bg-[#E5CD00] hover:border-[#E5CD00] hover:shadow-lg"
+            >
+              {copied ? <Check className="w-4 h-4 stroke-[3]" /> : <Camera className="w-4 h-4" />}
               {copied ? 'COPIED!' : 'COPY CAPTION'}
             </Button>
           </div>
@@ -335,14 +343,22 @@ See you in Goa — 28-31 Oct 2026.
           {/* Navigation Links */}
           <div className="grid grid-cols-2 gap-3 pt-2">
             <Link href="/create" className="w-full">
-              <Button size="md" variant="outline" className="w-full border-2 border-white text-white">
+              <Button
+                size="md"
+                variant="outline"
+                className="w-full bg-transparent text-white border-2 border-dashed border-white/60 hover:bg-transparent hover:border-[#FFE600] hover:text-[#FFE600]"
+              >
                 <RefreshCw className="w-4 h-4" /> CREATE ANOTHER
               </Button>
             </Link>
 
             <Link href="/gallery" className="w-full">
-              <Button size="md" variant="outline" className="w-full border-2 border-white text-white">
-                <Radio className="w-4 h-4 text-[#FFE600]" /> VIEW IN GALLERY
+              <Button
+                size="md"
+                variant="outline"
+                className="w-full bg-white text-[#1A2E22] border-2 border-white hover:bg-[#FF007A] hover:border-[#FF007A] hover:text-white hover:shadow-lg"
+              >
+                <Radio className="w-4 h-4 text-[#FF007A]" /> VIEW IN GALLERY
               </Button>
             </Link>
           </div>

@@ -20,8 +20,10 @@ function sanitizePhotoSettings(settings: unknown): PhotoFilterSettings | undefin
   const panX = typeof s.panX === 'number' && Number.isFinite(s.panX) ? Math.min(50, Math.max(-50, s.panX)) : undefined;
   const panY = typeof s.panY === 'number' && Number.isFinite(s.panY) ? Math.min(50, Math.max(-50, s.panY)) : undefined;
   const preset = ['RAW', 'VIVID', 'DARK', 'WARM'].includes(String(s.preset)) ? String(s.preset) : undefined;
+  const cardTheme = ['TROPICAL', 'SUNSET', 'CYBER', 'MINIMAL'].includes(String(s.cardTheme)) ? (s.cardTheme as PhotoFilterSettings['cardTheme']) : 'TROPICAL';
+  const frameStyle = ['WREATH', 'SUNBURST', 'NEON'].includes(String(s.frameStyle)) ? (s.frameStyle as PhotoFilterSettings['frameStyle']) : 'WREATH';
   if (zoom === undefined || panX === undefined || panY === undefined || !preset) return undefined;
-  return { zoom, panX, panY, preset: preset as PhotoFilterSettings['preset'] };
+  return { zoom, panX, panY, preset: preset as PhotoFilterSettings['preset'], cardTheme, frameStyle };
 }
 
 function sanitizeIdentity(identity: Partial<PublicBuilder>, uid: string): PublicBuilder | null {
@@ -33,12 +35,11 @@ function sanitizeIdentity(identity: Partial<PublicBuilder>, uid: string): Public
     : [];
   if (stack.length === 0) return null;
 
-  return {
+  const res: PublicBuilder = {
     id: uid,
     name: String(identity.name).slice(0, 60),
-    photoUrl: String(identity.photoUrl).slice(0, 500),
+    photoUrl: String(identity.photoUrl).slice(0, 3000000),
     stack,
-    xUsername: identity.xUsername ? String(identity.xUsername).replace(/^@/, '').slice(0, 30) : undefined,
     photoSettings: sanitizePhotoSettings(identity.photoSettings) ?? { zoom: 1, panX: 0, panY: 0, preset: 'RAW' },
     builderNumber: String(identity.builderNumber).slice(0, 20),
     claimCode: String(identity.claimCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12),
@@ -46,6 +47,13 @@ function sanitizeIdentity(identity: Partial<PublicBuilder>, uid: string): Public
     stats: identity.stats,
     createdAt: new Date().toISOString(),
   };
+
+  const cleanX = identity.xUsername ? String(identity.xUsername).replace(/^@/, '').trim().slice(0, 30) : '';
+  if (cleanX) {
+    res.xUsername = cleanX;
+  }
+
+  return res;
 }
 
 // Reserve a unique 12-char claim code and return it. The client-provided code
@@ -118,6 +126,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const db = getFirestore(app);
+    try {
+      db.settings({ ignoreUndefinedProperties: true });
+    } catch {
+      // ignore if settings already initialized
+    }
 
     // Reserve a unique 12-char code BEFORE creating the builder so the
     // code -> uid mapping and the builder doc always land together.

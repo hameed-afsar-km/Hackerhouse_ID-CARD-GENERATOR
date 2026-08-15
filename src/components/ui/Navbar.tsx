@@ -3,7 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Layers, LayoutGrid, Users, Info, Sparkles, Menu, X, Search } from 'lucide-react';
+import { Layers, LayoutGrid, Users, Info, Sparkles, Menu, X, Search, LogOut, User as UserIcon } from 'lucide-react';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import { getClientAuth } from '@/lib/firebase/client';
 import { Button } from './Button';
 import { GoaBadge } from './GoaBadge';
 
@@ -21,13 +23,28 @@ export const Navbar: React.FC = () => {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+
+    const unsubscribe = onAuthStateChanged(getClientAuth(), (u) => setUser(u));
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      unsubscribe();
+    };
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(getClientAuth());
+    } catch (e) {
+      console.error('Logout failed', e);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full">
@@ -96,14 +113,31 @@ export const Navbar: React.FC = () => {
           </nav>
 
           {/* Right CTA */}
-          <div className="hidden sm:flex items-center gap-4">
-            <Link href="/create" className="group">
-              <Button size="sm" variant="primary" className="pink-pill-btn">
-                <Sparkles className="w-3.5 h-3.5" />
-                BUILD ID
-                <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
-              </Button>
-            </Link>
+          <div className="hidden sm:flex items-center gap-3">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-bold text-[#FFE600] truncate max-w-[140px] bg-white/10 px-3 py-1.5 rounded-full border border-white/15">
+                  {user.displayName || user.email?.split('@')[0] || 'BUILDER'}
+                </span>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleLogout}
+                  className="bg-transparent text-[#FBF6E9] border-white/20 hover:border-[#FF007A] hover:bg-[#FF007A]/20 hover:text-white"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-[#FF007A]" />
+                  LOGOUT
+                </Button>
+              </div>
+            ) : (
+              <Link href="/create" className="group">
+                <Button size="sm" variant="primary" className="pink-pill-btn">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  BUILD ID
+                  <span className="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile toggle */}
@@ -153,12 +187,36 @@ export const Navbar: React.FC = () => {
             );
           })}
 
-          <div className="pt-6 px-1" style={{ transitionDelay: mobileOpen ? '400ms' : '0ms' }}>
-            <Link href="/create" onClick={() => setMobileOpen(false)} className={`block transition-all duration-300 ${mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <Button variant="primary" size="lg" className="w-full pink-pill-btn">
-                START BUILDING →
-              </Button>
-            </Link>
+          <div className="pt-6 px-1 space-y-3" style={{ transitionDelay: mobileOpen ? '400ms' : '0ms' }}>
+            {user ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between bg-white/10 px-4 py-3 rounded-2xl border border-white/15">
+                  <span className="font-mono text-xs font-bold text-[#FFE600] truncate max-w-[200px]">
+                    {user.email || 'SIGNED IN'}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold bg-[#FF007A] text-white px-2 py-0.5 rounded-full">
+                    VERIFIED
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileOpen(false);
+                  }}
+                  className="w-full border-white/30 text-white hover:bg-[#FF007A] hover:border-[#FF007A]"
+                >
+                  <LogOut className="w-4 h-4" /> LOG OUT
+                </Button>
+              </div>
+            ) : (
+              <Link href="/create" onClick={() => setMobileOpen(false)} className={`block transition-all duration-300 ${mobileOpen ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <Button variant="primary" size="lg" className="w-full pink-pill-btn">
+                  START BUILDING →
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </div>

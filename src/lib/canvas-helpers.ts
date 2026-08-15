@@ -26,7 +26,7 @@ const C_LEAF_DK    = '#0A4A25';
 
 // ─── Fonts ───────────────────────────────────────────────────────────────────
 const F_DISPLAY    = '"Imbue", "Playfair Display", serif';
-const F_DEVA       = '"Rozha One", "Noto Serif Devanagari", serif';
+const F_DEVA       = '"Nirmala UI", "Noto Sans Devanagari", sans-serif';
 const F_MONO       = '"Courier New", monospace';
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -53,245 +53,298 @@ export async function drawBuilderCard(
   // Leave 80 px margins on left/right, 80 top/bottom
   const CX = 80, CY = 80, CW = W - 160, CH = H - 160;
 
-  // Shadow
+  const cardTheme = builder.photoSettings?.cardTheme || 'TROPICAL';
+  const C_SUN    = '#FFB84D';
+  const C_SUNINK = '#4A2418';
+  const C_PEACH  = '#FFE7CE';
+  let bandGradCols = ['#FFC24B', '#FF7A5C', '#E84A8C'];
+  let pillColor = '#FF7A3D';
+
+  if (cardTheme === 'SUNSET') {
+    bandGradCols = ['#FF6A3D', '#FF2E63', '#9C3FE4'];
+    pillColor = '#FF5E3A';
+  } else if (cardTheme === 'CYBER') {
+    bandGradCols = ['#00E5FF', '#7A5CFF', '#FF2E88'];
+    pillColor = '#FF2E88';
+  } else if (cardTheme === 'MINIMAL') {
+    bandGradCols = ['#8A5A2B', '#6B4A2E', '#4A3418'];
+    pillColor = '#6B4A2E';
+  }
+
+  // Soft offset shadow
   ctx.save();
-  ctx.shadowColor   = 'rgba(0,0,0,0.55)';
-  ctx.shadowBlur    = 56;
-  ctx.shadowOffsetY = 22;
+  ctx.shadowColor   = 'rgba(0,0,0,0.28)';
+  ctx.shadowBlur    = 46;
+  ctx.shadowOffsetY = 18;
   ctx.fillStyle = C_CREAM;
   rrect(ctx, CX, CY, CW, CH, 32, true, false);
   ctx.restore();
 
-  // Cream fill
-  ctx.fillStyle = C_CREAM;
+  // Surface fill — warm cream
+  const surfGrad = ctx.createLinearGradient(CX, CY, CX, CY + CH);
+  surfGrad.addColorStop(0, '#FFF9EA');
+  surfGrad.addColorStop(1, '#FFF1DC');
+  ctx.fillStyle = surfGrad;
   rrect(ctx, CX, CY, CW, CH, 32, true, false);
 
-  // Outer border
-  ctx.strokeStyle = C_INK;
-  ctx.lineWidth = 3;
+  // Retro double border — warm brown + sun yellow
+  ctx.strokeStyle = C_SUNINK;
+  ctx.lineWidth   = 4;
   rrect(ctx, CX, CY, CW, CH, 32, false, true);
-
-  // Fine inner border
-  ctx.strokeStyle = 'rgba(26,46,34,0.07)';
-  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = C_SUN;
+  ctx.lineWidth   = 2;
   rrect(ctx, CX + 10, CY + 10, CW - 20, CH - 20, 24, false, true);
 
-  // ── TROPICAL FOLIAGE FRAME (drawn ON the card, inside it) ────────────────
-  _drawCardFoliageFrame(ctx, CX, CY, CW, CH);
+  // ── Layout anchors (footer + code plate) ──────────────────────────────────
+  const FOOTER_H = 170;
+  const FBOT = CY + CH;
+  const FTOP = FBOT - FOOTER_H;
+  const PLATE_H = 170;
+  const PLATE_W = CW - 120;
+  const plateTop = FTOP - PLATE_H - 26;
+  const chipBottomMax = plateTop - 30;
 
-  // ── Header band ──────────────────────────────────────────────────────────
-  const BH = 168; // band height
-  const grad = ctx.createLinearGradient(CX, CY, CX + CW, CY);
-  grad.addColorStop(0,   '#C5005C');
-  grad.addColorStop(0.5, C_PINK);
-  grad.addColorStop(1,   '#8E0040');
-  ctx.fillStyle = grad;
+  // ── Header band — HACKER HOUSE + location & date ──────────────────────────
+  const BH = 200; // band height
+
+  // Sunset gradient band
+  const bandGrad = ctx.createLinearGradient(CX, CY, CX, CY + BH);
+  bandGrad.addColorStop(0,   bandGradCols[0]);
+  bandGrad.addColorStop(0.55, bandGradCols[1]);
+  bandGrad.addColorStop(1,   bandGradCols[2]);
+  ctx.fillStyle = bandGrad;
   rrect(ctx, CX, CY, CW, BH, 32, true, false);
-  // Fill bottom 24 px of band square so it merges cleanly
+  // Square off the bottom so it merges with the surface
   ctx.fillRect(CX, CY + BH - 24, CW, 24);
 
+  // Retro sun with rays on the right
+  _retroSun(ctx, CX + CW - 132, CY + 104, 34, 15, 'rgba(255,249,234,0.92)');
+
   // Pin dots
-  ctx.fillStyle = 'rgba(255,255,255,0.35)';
-  _circle(ctx, CX + 28, CY + 28, 7, true);
-  _circle(ctx, CX + CW - 28, CY + 28, 7, true);
+  ctx.fillStyle = 'rgba(255,249,234,0.4)';
+  _circle(ctx, CX + 30, CY + 30, 7, true);
+  _circle(ctx, CX + CW - 30, CY + 30, 7, true);
 
   // HACKER HOUSE wordmark
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle    = C_WHITE;
-  ctx.font         = `900 56px ${F_DISPLAY}`;
-  ctx.fillText('HACKER HOUSE', W / 2, CY + 74);
+  ctx.font         = `900 58px ${F_DISPLAY}`;
+  ctx.fillText('HACKER HOUSE', W / 2, CY + 96);
 
-  // Sub-tagline row: गोवा · GOA, INDIA · 28 – 31 OCT 2026
-  // Render as one centred string (mixed scripts still look fine at 22 px)
-  ctx.font      = `700 22px ${F_MONO}`;
-  ctx.fillStyle = 'rgba(251,246,233,0.88)';
-  ctx.fillText('गोवा  ·  GOA, INDIA  ·  28 – 31 OCT 2026', W / 2, CY + 130);
+  // Location & date — गोवा (Devanagari) + mono rest, centred on one baseline
+  ctx.fillStyle = 'rgba(255,249,234,0.9)';
+  ctx.textAlign = 'left';
+  ctx.font      = `700 22px ${F_DEVA}`;
+  const goaStr = 'गोवा';
+  const goaW   = ctx.measureText(goaStr).width;
+  ctx.font = `700 22px ${F_MONO}`;
+  const restStr = '  ·  GOA, INDIA  ·  28 – 31 OCT 2026';
+  const restW   = ctx.measureText(restStr).width;
+  const TAG_GAP = 18;
+  let tagX = W / 2 - (goaW + TAG_GAP + restW) / 2;
+  ctx.font = `700 22px ${F_DEVA}`;
+  ctx.fillText(goaStr, tagX, CY + 156);
+  tagX += goaW + TAG_GAP;
+  ctx.font = `700 22px ${F_MONO}`;
+  ctx.fillText(restStr, tagX, CY + 156);
 
-  // Yellow accent line
-  ctx.strokeStyle = C_YELLOW;
-  ctx.lineWidth   = 3;
-  ctx.beginPath();
-  ctx.moveTo(CX + 28, CY + BH);
-  ctx.lineTo(CX + CW - 28, CY + BH);
-  ctx.stroke();
+  // Wavy divider spilling onto the surface
+  _waveStrip(ctx, CX, CY + BH - 8, CW, 30, bandGradCols[1]);
+  _waveStrip(ctx, CX, CY + BH + 10, CW, 18, 'rgba(255,184,77,0.55)');
 
-  // ── Avatar photo ──────────────────────────────────────────────────────────
-  const PR    = 148; // photo radius
-  const PCXV  = W / 2;
-  const PCYV  = CY + BH + 24 + PR; // top of photo zone + radius
+  // ── Avatar photo — large circle with gradient border ──────────────────────
+  const PR   = 200; // photo radius
+  const PCXV = W / 2;
+  const PCYV = CY + BH + 62 + PR;
 
-  drawGradientRing(ctx, PCXV, PCYV, PR + 3, PR + 19, C_PINK, C_YELLOW, C_SEA);
+  // Warm halo behind the ring
+  ctx.fillStyle = 'rgba(255,184,77,0.35)';
+  _circle(ctx, PCXV, PCYV, PR + 42, true);
+
+  drawGradientRing(ctx, PCXV, PCYV, PR + 6, PR + 28, bandGradCols[2], bandGradCols[1], bandGradCols[0]);
   ctx.strokeStyle = C_WHITE;
-  ctx.lineWidth   = 4;
-  _circle(ctx, PCXV, PCYV, PR - 3, false, true);
+  ctx.lineWidth   = 5;
+  _circle(ctx, PCXV, PCYV, PR - 4, false, true);
 
   await _drawPhoto(ctx, builder, PCXV, PCYV, PR);
 
   // ── Identity ──────────────────────────────────────────────────────────────
-  // Start below photo with a 36 px gap
-  let y = PCYV + PR + 44;
+  let y = PCYV + PR + 58;
 
-  // Name (scaled to fit)
-  ctx.fillStyle    = C_INK;
+  // Name (scaled to fit, up to two lines)
+  ctx.fillStyle    = C_SUNINK;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'alphabetic';
   const nameStr  = builder.name.toUpperCase();
   let nameFS = 62;
   ctx.font = `900 ${nameFS}px ${F_DISPLAY}`;
-  while (nameFS > 34 && ctx.measureText(nameStr).width > CW - 80) {
+  let nameLines = [nameStr];
+  if (ctx.measureText(nameStr).width > CW - 90) {
+    const words = nameStr.split(' ');
+    let line1 = '';
+    let line2 = '';
+    for (const wd of words) {
+      const t = line1 ? `${line1} ${wd}` : wd;
+      if (ctx.measureText(t).width <= CW - 90) line1 = t;
+      else line2 = line2 ? `${line2} ${wd}` : wd;
+    }
+    if (line2) nameLines = [line1, line2];
+  }
+  while (nameFS > 32 && Math.max(...nameLines.map((l) => ctx.measureText(l).width)) > CW - 90) {
     nameFS -= 2;
     ctx.font = `900 ${nameFS}px ${F_DISPLAY}`;
   }
-  ctx.fillText(nameStr, W / 2, y);
-  y += Math.round(nameFS * 0.42) + 14;
+  nameLines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, y + i * Math.round(nameFS * 1.02));
+  });
+  y += nameLines.length * Math.round(nameFS * 1.02) + 18;
 
-  // Title pill
+  // ROLE pill
   const titleStr = builder.title.toUpperCase();
   let titleFS = 36;
   ctx.font = `700 ${titleFS}px ${F_DISPLAY}`;
-  while (titleFS > 22 && ctx.measureText(titleStr).width > CW - 160) {
+  while (titleFS > 22 && ctx.measureText(titleStr).width > CW - 200) {
     titleFS -= 2;
     ctx.font = `700 ${titleFS}px ${F_DISPLAY}`;
   }
-  const tW = ctx.measureText(titleStr).width + 56;
-  ctx.fillStyle = C_PINK;
-  rrect(ctx, W / 2 - tW / 2, y, tW, 52, 26, true, false);
+  const pillH = 58;
+  const tW = ctx.measureText(titleStr).width + 64;
+  ctx.save();
+  ctx.translate(W / 2, y + pillH / 2);
+  ctx.rotate(-0.03);
+  ctx.fillStyle = pillColor;
+  rrect(ctx, -tW / 2, -pillH / 2, tW, pillH, pillH / 2, true, false);
+  ctx.strokeStyle = C_CREAM;
+  ctx.lineWidth   = 3;
+  rrect(ctx, -tW / 2, -pillH / 2, tW, pillH, pillH / 2, false, true);
   ctx.fillStyle = C_WHITE;
-  ctx.fillText(titleStr, W / 2, y + 36);
-  y += 68;
+  ctx.fillText(titleStr, 0, pillH / 2 - 20);
+  ctx.restore();
+  y += pillH + 30;
 
-  // Handle · Builder # line
-  const handlePart = builder.xUsername ? `@${builder.xUsername}  ·  ` : '';
-  const metaStr    = `${handlePart}BUILDER #${builder.builderNumber}`;
-  ctx.font      = `700 21px ${F_MONO}`;
-  ctx.fillStyle = 'rgba(26,46,34,0.65)';
-  ctx.fillText(metaStr, W / 2, y);
-  y += 38;
-
-  // Divider
-  ctx.strokeStyle = 'rgba(26,46,34,0.10)';
-  ctx.lineWidth   = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(CX + 48, y);
-  ctx.lineTo(CX + CW - 48, y);
-  ctx.stroke();
-  y += 20;
-
-  // ── Tech stack chips ──────────────────────────────────────────────────────
+  // ── SKILL STACK chips ─────────────────────────────────────────────────────
   const stack = builder.stack || [];
   if (stack.length > 0) {
-    const PAD  = 24;
-    const GAP  = 10;
-    const BADH = 40;
-    let chipFS = 19;
+    ctx.fillStyle = 'rgba(74,36,24,0.55)';
+    ctx.font      = `800 15px ${F_MONO}`;
+    ctx.fillText('SKILL STACK', W / 2, y);
+    y += 26;
+
+    const PAD = 26, GAP = 12, BADH = 44, chipFS = 20;
     ctx.font = `700 ${chipFS}px ${F_MONO}`;
 
-    // Two-row wrapping
+    // Two-row wrapping; anything that can't fit collapses into a "+N MORE" chip
     const rows: string[][] = [[]];
     let rowW = 0;
-    stack.forEach(s => {
+    let leftOver = 0;
+    stack.forEach((s) => {
       const w = ctx.measureText(s).width + PAD * 2;
-      if (rowW + w + GAP > CW - 80 && rows[rows.length - 1].length > 0) {
+      if (leftOver > 0) { leftOver += 1; return; }
+      if (rowW + w + GAP > CW - 90 && rows[rows.length - 1].length > 0) {
+        if (rows.length >= 2) { leftOver = 1; return; }
         rows.push([]);
         rowW = 0;
       }
       rows[rows.length - 1].push(s);
       rowW += w + GAP;
     });
+    if (leftOver > 0) {
+      rows[1][rows[1].length - 1] = `+${leftOver} MORE`;
+    }
 
-    rows.forEach(row => {
+    // Draw only as many rows as fit above the code plate
+    let nRowsFit = 0;
+    let ry = y;
+    while (nRowsFit < 2 && ry + BADH <= chipBottomMax) {
+      nRowsFit += 1;
+      ry += BADH + 12;
+    }
+    const drawnRows = rows.slice(0, Math.max(1, nRowsFit));
+    if (rows.length > drawnRows.length) {
+      const extra = rows.slice(drawnRows.length).reduce((a, r) => a + r.length, 0);
+      const lastRow = drawnRows[drawnRows.length - 1];
+      lastRow[lastRow.length - 1] = `+${extra} MORE`;
+    }
+
+    drawnRows.forEach((row) => {
       if (row.length === 0) return;
-      const ws  = row.map(s => ctx.measureText(s).width + PAD * 2);
+      const ws  = row.map((s) => ctx.measureText(s).width + PAD * 2);
       const tot = ws.reduce((a, b) => a + b, 0) + GAP * (row.length - 1);
       let sx = W / 2 - tot / 2;
       row.forEach((s, i) => {
-        ctx.fillStyle = C_DARK_GRN;
-        rrect(ctx, sx, y, ws[i], BADH, BADH / 2, true, false);
-        ctx.fillStyle = C_YELLOW;
+        ctx.fillStyle = C_PEACH;
+        ctx.strokeStyle = C_SUNINK;
+        ctx.lineWidth   = 3;
+        rrect(ctx, sx, y, ws[i], BADH, BADH / 2, true, true);
+        ctx.fillStyle = C_SUNINK;
         ctx.textAlign = 'center';
-        ctx.fillText(s, sx + ws[i] / 2, y + 27);
+        ctx.fillText(s, sx + ws[i] / 2, y + 29);
         sx += ws[i] + GAP;
       });
-      y += BADH + 10;
+      y += BADH + 12;
     });
-    y += 8;
   }
 
-  // ── Stats row ─────────────────────────────────────────────────────────────
-  // 4 stats in a single row, capped to card width
-  const stats = [
-    { l: 'COMMITS',  v: fmtN(builder.stats.commitCount) },
-    { l: 'SHIP',     v: `${builder.stats.shipConfidence}` },
-    { l: 'ENERGY',   v: `${builder.stats.energy}` },
-    { l: 'CHAOS',    v: `${builder.stats.chaosIndex}` },
-  ];
-  const STAT_GAP = 12;
-  const STAT_H   = 60;
-  const STAT_W   = Math.floor((CW - 80 - STAT_GAP * (stats.length - 1)) / stats.length);
-  let sx2 = CX + 40;
+  // ── 12-char code plate — tilted retro label, very big code ────────────────
+  const code = formatClaimCode(resolveClaimCode(builder.claimCode, builder.builderNumber));
+  ctx.save();
+  ctx.translate(W / 2, plateTop + PLATE_H / 2);
+  ctx.rotate(-0.02);
+  ctx.fillStyle = C_CREAM;
+  rrect(ctx, -PLATE_W / 2, -PLATE_H / 2, PLATE_W, PLATE_H, 24, true, false);
+  ctx.strokeStyle = pillColor;
+  ctx.lineWidth   = 4;
+  rrect(ctx, -PLATE_W / 2, -PLATE_H / 2, PLATE_W, PLATE_H, 24, false, true);
+  ctx.strokeStyle = C_SUN;
+  ctx.lineWidth   = 2;
+  rrect(ctx, -PLATE_W / 2 + 9, -PLATE_H / 2 + 9, PLATE_W - 18, PLATE_H - 18, 18, false, true);
 
-  stats.forEach((st, i) => {
-    const bg = i % 2 === 0 ? C_YELLOW : C_PINK;
-    ctx.fillStyle = bg;
-    rrect(ctx, sx2, y, STAT_W, STAT_H, 14, true, false);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(74,36,24,0.6)';
+  ctx.font      = `800 15px ${F_MONO}`;
+  ctx.fillText('UNIQUE CODE', 0, -PLATE_H / 2 + 38);
 
-    ctx.font      = `800 28px ${F_DISPLAY}`;
-    ctx.fillStyle = i % 2 === 0 ? C_INK : C_WHITE;
-    ctx.textAlign = 'center';
-    ctx.fillText(st.v, sx2 + STAT_W / 2, y + 34);
+  let codeFS = 84;
+  ctx.font = `900 ${codeFS}px ${F_MONO}`;
+  while (codeFS > 48 && ctx.measureText(code).width > PLATE_W - 64) {
+    codeFS -= 2;
+    ctx.font = `900 ${codeFS}px ${F_MONO}`;
+  }
+  ctx.fillStyle = C_SUNINK;
+  ctx.fillText(code, 0, PLATE_H / 2 - 44);
+  ctx.restore();
 
-    ctx.font      = `700 11px ${F_MONO}`;
-    ctx.fillStyle = i % 2 === 0 ? 'rgba(26,46,34,0.65)' : 'rgba(255,255,255,0.78)';
-    ctx.fillText(st.l, sx2 + STAT_W / 2, y + 52);
-
-    sx2 += STAT_W + STAT_GAP;
-  });
-  y += STAT_H + 16;
-
-  // ── Footer band ───────────────────────────────────────────────────────────
-  const FH     = 130;
-  const FBOT   = CY + CH;       // bottom of card
-  const FTOP   = FBOT - FH;
-
-  // Ensure footer doesn't crash into stats — push down if needed
-  // (footer is anchored to card bottom, not curY)
-
-  ctx.fillStyle = C_DARK_GRN;
-  rrect(ctx, CX, FTOP, CW, FH, 32, true, false);
+  // ── Footer — #FrameInGoa, big & centred ───────────────────────────────────
+  // Sunset gradient band (reversed for depth)
+  const footGrad = ctx.createLinearGradient(CX, FTOP, CX, CY + CH);
+  footGrad.addColorStop(0,   bandGradCols[2]);
+  footGrad.addColorStop(0.5, bandGradCols[1]);
+  footGrad.addColorStop(1,   bandGradCols[0]);
+  ctx.fillStyle = footGrad;
+  rrect(ctx, CX, FTOP, CW, FOOTER_H, 32, true, false);
   // Square off the top corners so it merges with card body
   ctx.fillRect(CX, FTOP, CW, 16);
 
-  // Accent strips
-  ctx.fillStyle = C_YELLOW; ctx.fillRect(CX + 28, FTOP, 90, 3);
-  ctx.fillStyle = C_SEA;    ctx.fillRect(CX + 124, FTOP, 70, 3);
+  // Retro sun on the right
+  _retroSun(ctx, CX + CW - 120, FTOP + 68, 26, 12, 'rgba(255,249,234,0.35)');
 
-  // Left: claim code
-  const code = formatClaimCode(resolveClaimCode(builder.claimCode, builder.builderNumber));
-  ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(251,246,233,0.5)';
-  ctx.font      = `700 12px ${F_MONO}`;
-  ctx.fillText('UNIQUE CODE', CX + 28, FTOP + 30);
-  ctx.fillStyle = C_YELLOW;
-  ctx.font      = `900 38px ${F_MONO}`;
-  ctx.fillText(code, CX + 28, FTOP + 74);
-  ctx.fillStyle = 'rgba(251,246,233,0.4)';
-  ctx.font      = `700 11px ${F_MONO}`;
-  ctx.fillText('HH GOA 2026 BUILDER PASS', CX + 28, FTOP + 104);
-
-  // Right: hashtag + badge
-  ctx.textAlign = 'right';
-  ctx.fillStyle = C_WHITE;
-  ctx.font      = `900 32px ${F_DISPLAY}`;
-  ctx.fillText('#FrameInGoa', CX + CW - 28, FTOP + 48);
-
-  const BADGEW = 130;
-  ctx.fillStyle = C_PINK;
-  rrect(ctx, CX + CW - 28 - BADGEW, FTOP + 62, BADGEW, 38, 19, true, false);
-  ctx.fillStyle = C_WHITE;
-  ctx.font      = `700 13px ${F_MONO}`;
+  // #FrameInGoa — cream with warm outline
   ctx.textAlign = 'center';
-  ctx.fillText('HH GOA 2026', CX + CW - 28 - BADGEW / 2, FTOP + 86);
+  ctx.font      = `900 58px ${F_DISPLAY}`;
+  ctx.strokeStyle = 'rgba(74,36,24,0.55)';
+  ctx.lineWidth   = 8;
+  ctx.lineJoin    = 'round';
+  ctx.strokeText('#FrameInGoa', W / 2, FTOP + 84);
+  ctx.fillStyle = C_WHITE;
+  ctx.fillText('#FrameInGoa', W / 2, FTOP + 84);
+
+  ctx.fillStyle = 'rgba(255,249,234,0.85)';
+  ctx.font      = `700 15px ${F_MONO}`;
+  ctx.fillText('HH GOA 2026  ·  BUILDER PASS', W / 2, FTOP + 132);
+
+  // Waves lapping the top edge of the footer — sea meets the sunset
+  _waveStrip(ctx, CX, FTOP - 14, CW, 26, '#FFF1DC');
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -310,25 +363,33 @@ export async function drawProfileFrame(
 
   const S  = PROFILE_BASE_SIZE;
   const CX = S / 2;
-  const R  = 355; // photo radius
-  const RO = 378; // outer ring radius
+  const CY_CIRCLE = 435; // Centered vertically in available space
+  const R  = 285; // photo radius
+  const RO = 305; // outer ring radius
+  const frameStyle = builder.photoSettings?.frameStyle || 'WREATH';
 
   // Background
   _drawBg(ctx, S, S);
 
   // ── Photo ─────────────────────────────────────────────────────────────────
-  await _drawPhoto(ctx, builder, CX, CX, R);
+  await _drawPhoto(ctx, builder, CX, CY_CIRCLE, R);
 
   // Gradient ring over photo edge
-  drawGradientRing(ctx, CX, CX, R + 2, RO, C_PINK, C_YELLOW, C_SEA);
+  drawGradientRing(ctx, CX, CY_CIRCLE, R + 2, RO, C_PINK, C_YELLOW, C_SEA);
   ctx.strokeStyle = C_WHITE;
   ctx.lineWidth   = 4;
-  _circle(ctx, CX, CX, R - 6, false, true);
+  _circle(ctx, CX, CY_CIRCLE, R - 6, false, true);
 
-  // ── Tropical foliage frame (drawn around circle) ──────────────────────────
-  _drawProfileFoliage(ctx, CX, R);
+  // ── Frame Style Overlay Selection ──────────────────────────────────────────
+  if (frameStyle === 'SUNBURST') {
+    _drawProfileSunburstFrame(ctx, CX, CY_CIRCLE, R, RO);
+  } else if (frameStyle === 'NEON') {
+    _drawProfileNeonFrame(ctx, CX, CY_CIRCLE, R, RO);
+  } else {
+    _drawProfileFoliageFrame(ctx, CX, CY_CIRCLE, R, RO);
+  }
 
-  // ── Corner viewfinder brackets ────────────────────────────────────────────
+  // ── Corner Viewfinder Brackets ────────────────────────────────────────────
   const BRACK_LEN = 48;
   const BRACK_OFF = 30;
   ([
@@ -347,25 +408,24 @@ export async function drawProfileFrame(
     ctx.stroke();
   });
 
-  // ── Top banner ────────────────────────────────────────────────────────────
-  const BW = 420, BH = 62, BX = CX - BW / 2, BY = 24;
+  // ── Top Banner ────────────────────────────────────────────────────────────
+  const BW = 440, BH = 58, BX = CX - BW / 2, BY = 26;
   ctx.fillStyle = C_YELLOW;
-  rrect(ctx, BX, BY, BW, BH, 31, true, false);
+  rrect(ctx, BX, BY, BW, BH, 29, true, false);
   ctx.strokeStyle = C_PINK;
   ctx.lineWidth   = 3;
-  rrect(ctx, BX, BY, BW, BH, 31, false, true);
+  rrect(ctx, BX, BY, BW, BH, 29, false, true);
   ctx.fillStyle    = C_INK;
-  ctx.font         = `800 28px ${F_DISPLAY}`;
+  ctx.font         = `800 27px ${F_DISPLAY}`;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('HACKER HOUSE  ·  GOA 2026', CX, BY + 42);
+  ctx.fillText('HACKER HOUSE  ·  GOA 2026', CX, BY + 39);
 
-  // ── Bottom badge stack (3 items, each clearly separated) ─────────────────
-  // Fixed positions from bottom: hashtag at bottom, code above, title above that
-  const BOTTOM = S - 20;
+  // ── Bottom Badge Stack (No Overlap) ──────────────────────────────────────
+  const BOTTOM = S - 24;
 
   // 1. Hashtag badge (lowest)
-  const HBH = 58, HBW = 340;
+  const HBH = 56, HBW = 340;
   const HBY = BOTTOM - HBH;
   ctx.fillStyle = C_PINK;
   rrect(ctx, CX - HBW / 2, HBY, HBW, HBH, HBH / 2, true, false);
@@ -373,37 +433,143 @@ export async function drawProfileFrame(
   ctx.lineWidth   = 3;
   rrect(ctx, CX - HBW / 2, HBY, HBW, HBH, HBH / 2, false, true);
   ctx.fillStyle = C_WHITE;
-  ctx.font      = `800 30px ${F_DISPLAY}`;
-  ctx.fillText('#FrameInGoa', CX, HBY + 38);
+  ctx.font      = `800 29px ${F_DISPLAY}`;
+  ctx.fillText('#FrameInGoa', CX, HBY + 37);
 
-  // 2. Claim code (above hashtag, gap 10)
-  const CCH = 44, CCW = 260;
-  const CCY = HBY - 10 - CCH;
+  // 2. Claim code (above hashtag, 12px gap)
+  const CCH = 42, CCW = 260;
+  const CCY = HBY - 12 - CCH;
   ctx.fillStyle = C_DARK_GRN;
   rrect(ctx, CX - CCW / 2, CCY, CCW, CCH, CCH / 2, true, false);
   ctx.fillStyle = C_YELLOW;
-  ctx.font      = `700 19px ${F_MONO}`;
+  ctx.font      = `700 18px ${F_MONO}`;
   const code2 = formatClaimCode(resolveClaimCode(builder.claimCode, builder.builderNumber));
-  ctx.fillText(code2, CX, CCY + 29);
+  ctx.fillText(code2, CX, CCY + 27);
 
-  // 3. Title pill (above code, gap 10)
+  // 3. Title pill (above code, 12px gap)
   const titleStr = builder.title.toUpperCase();
-  let tFS = 26;
+  let tFS = 25;
   ctx.font = `700 ${tFS}px ${F_DISPLAY}`;
-  while (tFS > 16 && ctx.measureText(titleStr).width > 540) {
+  while (tFS > 16 && ctx.measureText(titleStr).width > 520) {
     tFS -= 2;
     ctx.font = `700 ${tFS}px ${F_DISPLAY}`;
   }
   const TW = Math.min(560, ctx.measureText(titleStr).width + 56);
-  const TPH = 50;
-  const TPY = CCY - 10 - TPH;
+  const TPH = 48;
+  const TPY = CCY - 12 - TPH;
   ctx.fillStyle   = C_CREAM;
   rrect(ctx, CX - TW / 2, TPY, TW, TPH, TPH / 2, true, false);
   ctx.strokeStyle = C_INK;
   ctx.lineWidth   = 2;
   rrect(ctx, CX - TW / 2, TPY, TW, TPH, TPH / 2, false, true);
   ctx.fillStyle = C_INK;
-  ctx.fillText(titleStr, CX, TPY + 34);
+  ctx.fillText(titleStr, CX, TPY + 33);
+}
+
+/**
+ * Dedicated tropical botanical wreath for the Profile Frame —
+ * Fronds, Monstera leaves and Hibiscus blossoms wreathed around the circular avatar frame.
+ */
+function _drawProfileFoliageFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  // Top-left diagonal of outer ring
+  ctx.save();
+  ctx.translate(cx - ro * 0.72, cy - ro * 0.72);
+  ctx.rotate(-Math.PI * 0.25);
+  _singleFrond(ctx, 0, 0, 115, 0, 0.25, C_LEAF_LT, C_LEAF_DK, 0.95);
+  _monsteraLeaf(ctx, -15, 20, 52, Math.PI * 0.15, C_LEAF_DK, 0.90);
+  _hibiscus(ctx, 20, -10, 18, C_PINK, C_YELLOW);
+  ctx.restore();
+
+  // Top-right diagonal of outer ring
+  ctx.save();
+  ctx.translate(cx + ro * 0.72, cy - ro * 0.72);
+  ctx.rotate(Math.PI * 0.25);
+  _singleFrond(ctx, 0, 0, 115, 0, 0.25, C_LEAF_LT, C_LEAF_DK, 0.95);
+  _monsteraLeaf(ctx, 15, 20, 52, -Math.PI * 0.15, C_LEAF_DK, 0.90);
+  _hibiscus(ctx, -20, -10, 18, C_PINK, C_YELLOW);
+  ctx.restore();
+
+  // Bottom-left diagonal of outer ring
+  ctx.save();
+  ctx.translate(cx - ro * 0.76, cy + ro * 0.65);
+  ctx.rotate(-Math.PI * 0.75);
+  _singleFrond(ctx, 0, 0, 120, 0, 0.3, C_LEAF_LT, C_LEAF_DK, 0.90);
+  _monsteraLeaf(ctx, -10, 25, 58, 0, C_LEAF_DK, 0.88);
+  ctx.restore();
+
+  // Bottom-right diagonal of outer ring
+  ctx.save();
+  ctx.translate(cx + ro * 0.76, cy + ro * 0.65);
+  ctx.rotate(Math.PI * 0.75);
+  _singleFrond(ctx, 0, 0, 120, 0, 0.3, C_LEAF_LT, C_LEAF_DK, 0.90);
+  _monsteraLeaf(ctx, 10, 25, 58, 0, C_LEAF_DK, 0.88);
+  _hibiscus(ctx, 25, 10, 20, '#FF4499', C_YELLOW);
+  ctx.restore();
+}
+
+/**
+ * Tropical Sunburst Frame Style —
+ * Golden sunrays radiant from the top with palm fronds cascading down the sides.
+ */
+function _drawProfileSunburstFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  for (let i = 0; i < 16; i++) {
+    const angle = (i / 16) * Math.PI * 2;
+    ctx.strokeStyle = i % 2 === 0 ? 'rgba(255, 230, 0, 0.45)' : 'rgba(255, 0, 122, 0.35)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(angle) * (ro + 8), Math.sin(angle) * (ro + 8));
+    ctx.lineTo(Math.cos(angle) * (ro + 36), Math.sin(angle) * (ro + 36));
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(cx - ro * 0.85, cy);
+  ctx.rotate(-Math.PI * 0.4);
+  _singleFrond(ctx, 0, 0, 120, 0, 0.3, C_LEAF_LT, C_LEAF_DK, 0.95);
+  _hibiscus(ctx, 20, 10, 18, C_PINK, C_YELLOW);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(cx + ro * 0.85, cy);
+  ctx.rotate(Math.PI * 0.4);
+  _singleFrond(ctx, 0, 0, 120, 0, 0.3, C_LEAF_LT, C_LEAF_DK, 0.95);
+  _hibiscus(ctx, -20, 10, 18, C_PINK, C_YELLOW);
+  ctx.restore();
+}
+
+/**
+ * Neon Glow Frame Style —
+ * Multi-layer glowing rings with vibrant corner tropical badges.
+ */
+function _drawProfileNeonFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  ctx.save();
+  ctx.shadowColor = C_PINK;
+  ctx.shadowBlur = 30;
+  ctx.strokeStyle = C_PINK;
+  ctx.lineWidth = 6;
+  _circle(ctx, cx, cy, ro + 12, false, true);
+
+  ctx.shadowColor = C_SEA;
+  ctx.shadowBlur = 20;
+  ctx.strokeStyle = C_SEA;
+  ctx.lineWidth = 4;
+  _circle(ctx, cx, cy, ro + 22, false, true);
+  ctx.restore();
+
+  _hibiscus(ctx, cx - ro * 0.72, cy - ro * 0.72, 22, C_PINK, C_YELLOW);
+  _hibiscus(ctx, cx + ro * 0.72, cy - ro * 0.72, 22, C_SEA, C_YELLOW);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -423,7 +589,7 @@ function _drawCardFoliageFrame(
   // ── Top-left cluster ──────────────────────────────────────────────────────
   ctx.save();
   ctx.translate(cx, cy);
-  _palmCluster(ctx,   0,   0,  70,  60, 1);  // angled right-down
+  _palmCluster(ctx,   0,   0,  70,  60);  // angled right-down
   _monsteraLeaf(ctx, 22,  54, 52, Math.PI * 0.18, C_LEAF_DK, 0.92);
   _hibiscus(ctx, 60,  34, 20, C_PINK, C_YELLOW);
   ctx.restore();
@@ -432,7 +598,7 @@ function _drawCardFoliageFrame(
   ctx.save();
   ctx.translate(cx + cw, cy);
   ctx.scale(-1, 1); // mirror horizontally
-  _palmCluster(ctx,   0,   0,  70,  60, 1);
+  _palmCluster(ctx,   0,   0,  70,  60);
   _monsteraLeaf(ctx, 22,  54, 52, Math.PI * 0.18, C_LEAF_DK, 0.92);
   _hibiscus(ctx, 60,  34, 20, C_PINK, C_YELLOW);
   ctx.restore();
@@ -441,7 +607,7 @@ function _drawCardFoliageFrame(
   ctx.save();
   ctx.translate(cx, cy + ch);
   ctx.scale(1, -1); // mirror vertically
-  _palmCluster(ctx,   0,   0,  90,  70, 1);
+  _palmCluster(ctx,   0,   0,  90,  70);
   _monsteraLeaf(ctx, 28,  60, 62, Math.PI * 0.22, C_LEAF_LT, 0.88);
   ctx.restore();
 
@@ -449,45 +615,13 @@ function _drawCardFoliageFrame(
   ctx.save();
   ctx.translate(cx + cw, cy + ch);
   ctx.scale(-1, -1); // mirror both
-  _palmCluster(ctx,   0,   0,  90,  70, 1);
+  _palmCluster(ctx,   0,   0,  90,  70);
   _monsteraLeaf(ctx, 28,  60, 62, Math.PI * 0.22, C_LEAF_LT, 0.88);
   _hibiscus(ctx, 64,  38, 18, '#FF4499', C_YELLOW);
   ctx.restore();
 }
 
-/**
- * Tropical foliage around the circular profile frame — fronds emerge from
- * outside the ring at the four diagonal corners.
- */
-function _drawProfileFoliage(ctx: CanvasRenderingContext2D, center: number, r: number) {
-  const D45 = r * Math.cos(Math.PI / 4); // ~0.707 * r offset per axis
 
-  // Positions at 45° diagonals (NW, NE, SW, SE)
-  const clusters: [number, number, number][] = [
-    [center - D45, center - D45, -Math.PI * 0.15],  // top-left
-    [center + D45, center - D45,  Math.PI * 0.15],  // top-right
-    [center - D45, center + D45, -Math.PI * 0.85],  // bottom-left
-    [center + D45, center + D45,  Math.PI * 0.85],  // bottom-right
-  ];
-
-  clusters.forEach(([ox, oy, angle], i) => {
-    ctx.save();
-    ctx.translate(ox, oy);
-    ctx.rotate(angle);
-
-    // Frond pointing outward
-    _singleFrond(ctx, 0, 0, 110, 0, 0.22, C_LEAF_LT, C_LEAF_DK, 0.92);
-
-    // Monstera leaf at alternating corners
-    if (i % 2 === 0) {
-      _monsteraLeaf(ctx, -16, 10, 44, 0.3, C_LEAF_DK, 0.88);
-    } else {
-      _hibiscus(ctx, 8, -8, 18, C_PINK, C_YELLOW);
-    }
-
-    ctx.restore();
-  });
-}
 
 // ── Botanical primitives ──────────────────────────────────────────────────────
 
@@ -495,8 +629,7 @@ function _drawProfileFoliage(ctx: CanvasRenderingContext2D, center: number, r: n
 function _palmCluster(
   ctx: CanvasRenderingContext2D,
   x: number, y: number,
-  w: number, h: number,
-  _scale: number
+  w: number, h: number
 ) {
   // Three fronds at slightly different angles
   _singleFrond(ctx, x, y, w,        Math.PI * 0.08, 0.7,  C_LEAF_LT, C_LEAF_DK, 0.90);
@@ -660,21 +793,95 @@ async function _drawPhoto(
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, Math.PI * 2);
       ctx.clip();
+
+      // Background inside clipped circle
+      ctx.fillStyle = C_BG;
+      ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+
       const s  = builder.photoSettings || { zoom: 1, panX: 0, panY: 0, preset: 'RAW' };
       const zm = s.zoom || 1;
       const d  = r * 2;
       const px = ((s.panX || 0) / 100) * d;
       const py = ((s.panY || 0) / 100) * d;
-      const ir = img.width / img.height;
+      const ir = (img.width || 1) / (img.height || 1);
       let dw = d * zm, dh = d * zm;
       if (ir > 1) dw = d * ir * zm; else dh = (d / ir) * zm;
       ctx.drawImage(img, cx - dw / 2 + px, cy - dh / 2 + py, dw, dh);
       ctx.restore();
       return;
-    } catch { /* fall through to placeholder */ }
+    } catch (err) {
+      console.warn('Failed to load image in _drawPhoto, rendering initials fallback:', err);
+    }
   }
-  ctx.fillStyle = C_BG;
+
+  // Fallback: render stylized Builder Initials if photo URL is missing or failed to render
+  ctx.save();
+  ctx.fillStyle = C_DARK_GRN;
   _circle(ctx, cx, cy, r, true);
+  ctx.strokeStyle = C_YELLOW;
+  ctx.lineWidth = 4;
+  _circle(ctx, cx, cy, r - 4, false, true);
+
+  const initials = (builder.name || 'B')
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'HH';
+
+  ctx.fillStyle = C_YELLOW;
+  ctx.font = `900 ${Math.round(r * 0.7)}px ${F_DISPLAY}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(initials, cx, cy + 4);
+  ctx.restore();
+}
+
+/** Retro sun with triangular rays (70s poster style). */
+function _retroSun(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number,
+  r: number, rayLen: number,
+  color: string
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const dx = Math.cos(a), dy = Math.sin(a);
+    ctx.beginPath();
+    ctx.moveTo(dx * r, dy * r);
+    ctx.lineTo(dx * (r + rayLen) + dy * 7, dy * (r + rayLen) - dx * 7);
+    ctx.lineTo(dx * (r + rayLen) - dy * 7, dy * (r + rayLen) + dx * 7);
+    ctx.closePath();
+    ctx.fill();
+  }
+  _circle(ctx, 0, 0, r, true);
+  ctx.restore();
+}
+
+/** Wavy strip — the top edge oscillates between y and y+h, filled down to y+h. */
+function _waveStrip(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number,
+  w: number, h: number,
+  color: string
+) {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  const n = 6;
+  const sw = w / n;
+  for (let i = 0; i < n; i++) {
+    const mid = i % 2 === 0 ? y + h : y;
+    ctx.quadraticCurveTo(x + (i + 0.5) * sw, mid, x + (i + 1) * sw, i % 2 === 0 ? y : y + h);
+  }
+  ctx.lineTo(x + w, y + h);
+  ctx.lineTo(x, y + h);
+  ctx.closePath();
+  ctx.fill();
 }
 
 function drawGradientRing(
@@ -722,16 +929,24 @@ function _circle(
 function loadImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'Anonymous';
-    img.onload  = () => resolve(img);
-    img.onerror = e  => reject(e);
+    // NEVER set crossOrigin on data: URLs or blob: URLs (browsers throw CORS error for data: schemes)
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      img.crossOrigin = 'anonymous';
+    }
+    img.onload = () => resolve(img);
+    img.onerror = () => {
+      if (img.crossOrigin) {
+        // Fallback retry without crossOrigin if CORS header was rejected by remote server
+        const retryImg = new Image();
+        retryImg.onload = () => resolve(retryImg);
+        retryImg.onerror = (e) => reject(e);
+        retryImg.src = url;
+      } else {
+        reject(new Error(`Failed to load image: ${url.slice(0, 50)}`));
+      }
+    };
     img.src = url;
   });
-}
-
-function fmtN(n: number): string {
-  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-  return `${n}`;
 }
 
 /** Deterministic jitter [0,1). */

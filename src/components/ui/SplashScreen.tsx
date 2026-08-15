@@ -6,11 +6,11 @@ import { GoaBadge } from './GoaBadge';
 
 const wordContainer: Variants = {
   hidden: {},
-  show: { transition: { staggerChildren: 0.055, delayChildren: 0.15 } },
+  show: { transition: { staggerChildren: 0.055, delayChildren: 0.2 } },
 };
 
 const letterVariant: Variants = {
-  hidden: { opacity: 0, y: 32, rotateX: 90, filter: 'blur(6px)' },
+  hidden: { opacity: 0, y: 40, rotateX: 90, filter: 'blur(6px)' },
   show: {
     opacity: 1,
     y: 0,
@@ -68,9 +68,9 @@ const Palm = ({ flip = false }: { flip?: boolean }) => (
   </svg>
 );
 
-const WaveShape = () => (
+const WaveShape = ({ color = '#064E29' }: { color?: string }) => (
   <svg className="w-full h-full shrink-0" viewBox="0 0 1440 100" preserveAspectRatio="none" aria-hidden="true">
-    <path d="M0,40 C180,90 360,0 540,40 C720,90 900,0 1080,40 C1260,90 1440,40 1440,40 L1440,100 L0,100 Z" fill="#064E29" />
+    <path d="M0,40 C180,90 360,0 540,40 C720,90 900,0 1080,40 C1260,90 1440,40 1440,40 L1440,100 L0,100 Z" fill={color} />
   </svg>
 );
 
@@ -78,8 +78,8 @@ export const SplashScreen = () => {
   const [phase, setPhase] = useState<'visible' | 'fading' | 'done'>('visible');
 
   useEffect(() => {
-    const fade = setTimeout(() => setPhase('fading'), 1750);
-    const done = setTimeout(() => setPhase('done'), 2300);
+    const fade = setTimeout(() => setPhase('fading'), 1850);
+    const done = setTimeout(() => setPhase('done'), 2400);
     return () => {
       clearTimeout(fade);
       clearTimeout(done);
@@ -118,24 +118,70 @@ export const SplashScreen = () => {
           <Palm flip />
         </div>
 
-        {/* Center content — HACKER / गोवा / HOUSE */}
-        <div className="relative z-10 flex flex-col items-center gap-3 px-6 text-center">
-          <div className="font-display font-black uppercase leading-[0.9] tracking-tight text-[#FFE600]">
-            <div className="text-5xl sm:text-7xl">
+        {/* Center poster — HACKER / गोवा / HOUSE */}
+        <div className="relative z-10 flex flex-col items-center justify-center w-full px-6 text-center">
+          {/* Eyebrow pill */}
+          <motion.div
+            initial={{ opacity: 0, y: -18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.45 }}
+            className="mb-8 sm:mb-12 inline-flex items-center gap-2.5 bg-[#FFE600] text-[#1A2E22] px-4 py-2 rounded-full font-mono text-[11px] font-bold uppercase tracking-wider shadow-md"
+          >
+            <span className="h-2 w-2 rounded-full bg-[#FF007A]" />
+            HH GOA 2026 · ID & FRAME GENERATOR
+          </motion.div>
+
+          {/* Poster */}
+          <div className="relative flex flex-col items-center">
+            {/* HACKER — assembles above the line */}
+            <div className="text-5xl sm:text-7xl font-display font-black uppercase leading-none tracking-tight text-[#FFE600]">
               <SplashWord text="HACKER" />
             </div>
-            <motion.div
-              initial={{ opacity: 0, scale: 0.4, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ type: 'spring', stiffness: 180, damping: 15, delay: 0.4 }}
-              className="my-1 sm:my-2"
-            >
-              <GoaBadge size="3xl" />
-            </motion.div>
-            <div className="text-5xl sm:text-7xl">
+
+            {/* Wavy divider line */}
+            <div className="w-[130%] my-5 sm:my-8 opacity-25 pointer-events-none">
+              <WaveShape color="#FBF6E9" />
+            </div>
+
+            {/* HOUSE — assembles below the line */}
+            <div className="text-5xl sm:text-7xl font-display font-black uppercase leading-none tracking-tight text-[#FFE600]">
               <SplashWord text="HOUSE" />
             </div>
+
+            {/* गोवा stamps in on the line */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0, rotate: -18 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 13, delay: 0.55 }}
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20"
+            >
+              {/* Pink impact ring */}
+              <motion.span
+                initial={{ opacity: 0.8, scale: 0.35 }}
+                animate={{ opacity: 0, scale: 1.6 }}
+                transition={{ delay: 0.55, duration: 0.7, ease: 'easeOut' }}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] aspect-square rounded-full border-2 border-[#FF007A]/70 pointer-events-none"
+              />
+              {/* Yellow accent line under गोवा */}
+              <motion.span
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 1 }}
+                transition={{ delay: 1.05, duration: 0.35, ease: 'easeOut' }}
+                className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 w-56 sm:w-80 h-1.5 bg-[#FFE600] rounded-full origin-center pointer-events-none"
+              />
+              <GoaBadge size="3xl" />
+            </motion.div>
           </div>
+
+          {/* Bottom mono line */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.1, duration: 0.45 }}
+            className="mt-10 sm:mt-14 font-mono text-xs sm:text-sm text-[#FFE600] font-bold tracking-widest"
+          >
+            THE ISLAND · GOA, INDIA · 28 – 31 OCT 2026
+          </motion.div>
         </div>
 
         {/* Waves lapping at the base */}

@@ -2,8 +2,8 @@ import { BuilderIdentity, StackCategory } from '@/types/builder';
 import { createBuilderIdentity, fnv1aHash } from './builder-engine';
 
 const DEMO_NAMES = [
-  'Mohammed Aadil',
   'Hameed Afsar KM',
+  'Mohammed Aadil',
   'Mohamed Shakeel',
 ];
 
@@ -94,20 +94,20 @@ export function generateDemoBuilders(count = 247): BuilderIdentity[] {
 
 export const SAMPLE_BUILDERS: BuilderIdentity[] = [
   createBuilderIdentity({
-    name: 'Mohammed Aadil',
-    photoUrl: createSampleAvatarSvg('Mohammed Aadil', '#0B6B3A'),
-    stack: ['AI', 'ROBOTICS', 'FULL STACK'],
-    xUsername: 'aadil',
-    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'VIVID' },
-    seed: fnv1aHash('Mohammed Aadil-ai'),
-  }),
-  createBuilderIdentity({
     name: 'Hameed Afsar KM',
     photoUrl: createSampleAvatarSvg('Hameed Afsar KM', '#FF007A'),
     stack: ['FRONTEND', 'DESIGN', 'PRODUCT'],
     xUsername: 'hameedafsar',
     photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'WARM' },
     seed: fnv1aHash('Hameed Afsar KM-frontend'),
+  }),
+  createBuilderIdentity({
+    name: 'Mohammed Aadil',
+    photoUrl: createSampleAvatarSvg('Mohammed Aadil', '#0B6B3A'),
+    stack: ['AI', 'ROBOTICS', 'FULL STACK'],
+    xUsername: 'aadil',
+    photoSettings: { zoom: 1, panX: 0, panY: 0, preset: 'VIVID' },
+    seed: fnv1aHash('Mohammed Aadil-ai'),
   }),
   createBuilderIdentity({
     name: 'Mohamed Shakeel',

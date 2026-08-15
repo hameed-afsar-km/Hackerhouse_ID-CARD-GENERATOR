@@ -3,14 +3,17 @@ import Link from 'next/link';
 
 export const Footer: React.FC = () => {
   return (
-    <footer
-      className="relative border-t border-white/10 text-[#FBF6E9] py-20 px-4 sm:px-6 lg:px-8 overflow-hidden"
-      style={{
-        backgroundImage: "url('/footer.jpeg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
+    <footer className="relative border-t border-white/10 text-[#FBF6E9] py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+      {/* Brand background image — desktop only; Android/mobile view uses plain text instead */}
+      <div
+        className="absolute inset-0 hidden sm:block"
+        style={{
+          backgroundImage: "url('/footer.jpeg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+        aria-hidden="true"
+      />
       {/* Palm Trees vector decoration */}
       <svg className="absolute bottom-0 -left-10 w-96 h-96 opacity-25 text-white pointer-events-none animate-hh-sway" viewBox="0 0 100 100" fill="currentColor">
         <path d="M45 100 Q50 60 40 20 L45 20 Q55 60 55 100 Z" />
@@ -28,9 +31,14 @@ export const Footer: React.FC = () => {
       </svg>
 
       <div className="max-w-7xl mx-auto space-y-12 relative z-10">
-        {/* Footer heading area — the HACKER HOUSE GOA branding lives in the footer.jpeg background */}
+        {/* Footer heading area — desktop shows the footer.jpeg branding; mobile renders plain text */}
         <div className="text-center space-y-3">
-          <div className="h-[150px] sm:h-[230px]" aria-hidden="true" />
+          <div className="hidden sm:block h-[230px]" aria-hidden="true" />
+
+          {/* Mobile-only brand text (Android view) */}
+          <h2 className="sm:hidden font-display font-black text-4xl uppercase tracking-tight text-[#FFE600] leading-none">
+            HACKER HOUSE GOA
+          </h2>
 
           <div className="font-mono text-sm sm:text-base text-[#FFE600] font-bold tracking-widest pt-2">
             GOA, INDIA · 28 – 31 OCT 2026

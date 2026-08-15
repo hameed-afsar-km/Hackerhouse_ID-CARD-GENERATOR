@@ -341,16 +341,19 @@ export default function Home() {
               </motion.div>
 
               <div className="flex flex-wrap items-end justify-center gap-x-5 gap-y-2">
-                <h1 className="font-display font-black text-4xl sm:text-6xl lg:text-7xl tracking-tight text-[#FFE600] uppercase leading-none">
-                  <StaggerText text="HACKER HOUSE" />
-                </h1>
-                <motion.div variants={heroItem} className="sm:translate-y-1">
-                  <GoaBadge
-                    size="lg"
-                    tilt
-                    className="cursor-pointer transition-transform duration-300 hover:rotate-12 hover:scale-110"
-                  />
-                </motion.div>
+                <div className="relative">
+                  <h1 className="font-display font-black text-5xl sm:text-7xl lg:text-8xl tracking-tight text-[#FFE600] uppercase leading-[0.85]">
+                    <StaggerText text="HACKER" />
+                    <br />
+                    <StaggerText text="HOUSE" />
+                  </h1>
+                  <span
+                    className="absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-[#FF007A] font-devanagari font-black leading-none text-2xl sm:text-3xl lg:text-4xl"
+                    style={{ WebkitTextStroke: '3px #FFE600', paintOrder: 'stroke fill' }}
+                  >
+                    गोवा
+                  </span>
+                </div>
               </div>
 
               <motion.div variants={heroItem} className="font-mono text-sm sm:text-base text-[#FFE600] font-bold tracking-widest">

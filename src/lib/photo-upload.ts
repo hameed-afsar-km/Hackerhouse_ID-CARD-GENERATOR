@@ -24,9 +24,73 @@ function compressDataUrl(dataUrl: string, maxDim = 800, quality = 0.85): Promise
   });
 }
 
+function ensureBase64DataUrl(dataUrl: string): string {
+  if (dataUrl.includes(';base64,')) {
+    return dataUrl;
+  }
+  try {
+    const commaIdx = dataUrl.indexOf(',');
+    if (commaIdx !== -1) {
+      const meta = dataUrl.substring(0, commaIdx);
+      const rawContent = dataUrl.substring(commaIdx + 1);
+      const decoded = decodeURIComponent(rawContent);
+      // Safe base64 encoding for UTF-8 string content (e.g. SVGs)
+      const b64 = typeof window !== 'undefined'
+        ? btoa(unescape(encodeURIComponent(decoded)))
+        : Buffer.from(decoded).toString('base64');
+      const mime = meta.split(':')[1]?.split(';')[0] || 'image/svg+xml';
+      return `data:${mime};base64,${b64}`;
+    }
+  } catch (err) {
+    console.warn('Could not convert dataUrl to base64, using raw', err);
+  }
+  return dataUrl;
+}
+
 export async function uploadBuilderPhoto(uid: string, dataUrl: string): Promise<string> {
-  const compressed = await compressDataUrl(dataUrl);
-  const photoRef = ref(getClientStorage(), `builders/${uid}/photo`);
-  await uploadString(photoRef, compressed, 'data_url', { contentType: 'image/jpeg' });
-  return getDownloadURL(photoRef);
+  if (!dataUrl) return '';
+
+  const doUpload = async (): Promise<string> => {
+    let finalDataUrl = dataUrl;
+    let contentType = 'image/jpeg';
+
+    if (dataUrl.startsWith('data:image/svg')) {
+      contentType = 'image/svg+xml';
+      finalDataUrl = ensureBase64DataUrl(dataUrl);
+    } else if (dataUrl.startsWith('data:image/')) {
+      try {
+        finalDataUrl = await Promise.race([
+          compressDataUrl(dataUrl),
+          new Promise<string>((_, reject) =>
+            setTimeout(() => reject(new Error('Compression timeout')), 2000)
+          ),
+        ]);
+      } catch (e) {
+        console.warn('Image compression bypassed:', e);
+      }
+    }
+
+    finalDataUrl = ensureBase64DataUrl(finalDataUrl);
+
+    if (!finalDataUrl.includes(';base64,')) {
+      return finalDataUrl;
+    }
+
+    const storage = getClientStorage();
+    const photoRef = ref(storage, `builders/${uid}/photo`);
+    await uploadString(photoRef, finalDataUrl, 'data_url', { contentType });
+    return await getDownloadURL(photoRef);
+  };
+
+  try {
+    return await Promise.race([
+      doUpload(),
+      new Promise<string>((_, reject) =>
+        setTimeout(() => reject(new Error('Upload timeout')), 4000)
+      ),
+    ]);
+  } catch (err) {
+    console.warn('uploadBuilderPhoto fallback used:', err);
+    return dataUrl;
+  }
 }

@@ -14,12 +14,16 @@ export type StackCategory =
   | 'OTHER';
 
 export type PhotoPreset = 'RAW' | 'VIVID' | 'DARK' | 'WARM';
+export type CardTheme = 'TROPICAL' | 'SUNSET' | 'CYBER' | 'MINIMAL';
+export type FrameStyle = 'WREATH' | 'SUNBURST' | 'NEON';
 
 export interface PhotoFilterSettings {
   zoom: number; // 1 to 2
   panX: number; // -50 to 50
   panY: number; // -50 to 50
   preset: PhotoPreset;
+  cardTheme?: CardTheme;
+  frameStyle?: FrameStyle;
 }
 
 export interface BuilderInput {
