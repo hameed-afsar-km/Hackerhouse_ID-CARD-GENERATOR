@@ -1,7 +1,7 @@
 import { getDownloadURL, ref, uploadString } from 'firebase/storage';
 import { getClientStorage } from '@/lib/firebase/client';
 
-function compressDataUrl(dataUrl: string, maxDim = 800, quality = 0.85): Promise<string> {
+function compressDataUrl(dataUrl: string, maxDim = 640, quality = 0.8): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
@@ -50,6 +50,9 @@ function ensureBase64DataUrl(dataUrl: string): string {
 export async function uploadBuilderPhoto(uid: string, dataUrl: string): Promise<string> {
   if (!dataUrl) return '';
 
+  const MAX_STORABLE = 900000; // Firestore document limit is ~1MiB
+  let compressedFallback = dataUrl;
+
   const doUpload = async (): Promise<string> => {
     let finalDataUrl = dataUrl;
     let contentType = 'image/jpeg';
@@ -62,15 +65,25 @@ export async function uploadBuilderPhoto(uid: string, dataUrl: string): Promise<
         finalDataUrl = await Promise.race([
           compressDataUrl(dataUrl),
           new Promise<string>((_, reject) =>
-            setTimeout(() => reject(new Error('Compression timeout')), 2000)
+            setTimeout(() => reject(new Error('Compression timeout')), 3000)
           ),
         ]);
+        // Aggressively re-compress if the photo is still too large to store.
+        if (finalDataUrl.length > MAX_STORABLE) {
+          finalDataUrl = await Promise.race([
+            compressDataUrl(dataUrl, 480, 0.7),
+            new Promise<string>((_, reject) =>
+              setTimeout(() => reject(new Error('Recompression timeout')), 3000)
+            ),
+          ]);
+        }
       } catch (e) {
         console.warn('Image compression bypassed:', e);
       }
     }
 
     finalDataUrl = ensureBase64DataUrl(finalDataUrl);
+    compressedFallback = finalDataUrl;
 
     if (!finalDataUrl.includes(';base64,')) {
       return finalDataUrl;
@@ -86,11 +99,13 @@ export async function uploadBuilderPhoto(uid: string, dataUrl: string): Promise<
     return await Promise.race([
       doUpload(),
       new Promise<string>((_, reject) =>
-        setTimeout(() => reject(new Error('Upload timeout')), 4000)
+        setTimeout(() => reject(new Error('Upload timeout')), 5000)
       ),
     ]);
   } catch (err) {
+    // If the upload fails, keep the compressed local photo so the card still
+    // renders — but never return a payload too large for Firestore.
     console.warn('uploadBuilderPhoto fallback used:', err);
-    return dataUrl;
+    return compressedFallback.length <= MAX_STORABLE ? compressedFallback : '';
   }
 }

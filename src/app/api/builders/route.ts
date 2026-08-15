@@ -20,10 +20,13 @@ function sanitizePhotoSettings(settings: unknown): PhotoFilterSettings | undefin
   const panX = typeof s.panX === 'number' && Number.isFinite(s.panX) ? Math.min(50, Math.max(-50, s.panX)) : undefined;
   const panY = typeof s.panY === 'number' && Number.isFinite(s.panY) ? Math.min(50, Math.max(-50, s.panY)) : undefined;
   const preset = ['RAW', 'VIVID', 'DARK', 'WARM'].includes(String(s.preset)) ? String(s.preset) : undefined;
-  const cardTheme = ['TROPICAL', 'SUNSET', 'CYBER', 'MINIMAL'].includes(String(s.cardTheme)) ? (s.cardTheme as PhotoFilterSettings['cardTheme']) : 'TROPICAL';
-  const frameStyle = ['WREATH', 'SUNBURST', 'NEON'].includes(String(s.frameStyle)) ? (s.frameStyle as PhotoFilterSettings['frameStyle']) : 'WREATH';
+  const cardTheme = ['TROPICAL', 'SUNSET', 'CYBER', 'OBSIDIAN'].includes(String(s.cardTheme)) ? (s.cardTheme as PhotoFilterSettings['cardTheme']) : 'TROPICAL';
+  const frameStyle = ['WREATH', 'SUNBURST', 'NEON', 'CIRCUIT'].includes(String(s.frameStyle)) ? (s.frameStyle as PhotoFilterSettings['frameStyle']) : 'WREATH';
+  const cardBackground = ['NIGHT', 'SUNSET', 'FOREST', 'CYBER'].includes(String(s.cardBackground)) ? (s.cardBackground as PhotoFilterSettings['cardBackground']) : undefined;
   if (zoom === undefined || panX === undefined || panY === undefined || !preset) return undefined;
-  return { zoom, panX, panY, preset: preset as PhotoFilterSettings['preset'], cardTheme, frameStyle };
+  const result: PhotoFilterSettings = { zoom, panX, panY, preset: preset as PhotoFilterSettings['preset'], cardTheme, frameStyle };
+  if (cardBackground) result.cardBackground = cardBackground;
+  return result;
 }
 
 function sanitizeIdentity(identity: Partial<PublicBuilder>, uid: string): PublicBuilder | null {
@@ -122,6 +125,15 @@ export async function POST(request: NextRequest) {
   const builder = sanitizeIdentity(identity, uid);
   if (!builder) {
     return NextResponse.json({ error: 'Invalid identity payload' }, { status: 400 });
+  }
+
+  // Firestore caps documents at ~1MiB; a base64 data-URL photo must stay well
+  // under that or the write is rejected with INVALID_ARGUMENT.
+  if (builder.photoUrl.length > 1000000) {
+    return NextResponse.json(
+      { error: 'Photo is too large to save. Please upload a smaller image and try again.' },
+      { status: 413 }
+    );
   }
 
   try {

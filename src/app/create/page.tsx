@@ -302,7 +302,7 @@ export default function CreatePage() {
 
       // 4. Claim it server-side in an atomic transaction (409 = already claimed)
       const controller = new AbortController();
-      const claimTimer = setTimeout(() => controller.abort(), 20000);
+      const claimTimer = setTimeout(() => controller.abort(), 30000);
       const res = await withTimeout(
         fetch('/api/builders', {
           method: 'POST',
@@ -310,7 +310,7 @@ export default function CreatePage() {
           body: JSON.stringify({ idToken, identity }),
           signal: controller.signal,
         }),
-        20000,
+        30000,
         'Claiming your Builder ID'
       ).finally(() => clearTimeout(claimTimer));
 
