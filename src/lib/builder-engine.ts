@@ -63,6 +63,11 @@ export function generateBuilderTitle(seed: number): string {
   return BUILDER_TITLES[index];
 }
 
+// Roll a fresh title from the list (used by the studio ROLL button)
+export function rollBuilderTitle(): string {
+  return BUILDER_TITLES[Math.floor(Math.random() * BUILDER_TITLES.length)];
+}
+
 // Generate random playful builder stats (purely visual)
 export function generateBuilderStats(seed: number): BuilderStats {
   const prng = createPRNG(seed);
@@ -135,7 +140,7 @@ export function createBuilderIdentity(input: BuilderInput): BuilderIdentity {
       `${input.name.trim().toUpperCase()}-${input.stack.sort().join('-')}-${Date.now()}`
     );
 
-  const title = generateBuilderTitle(seed);
+  const title = (input.title || '').trim().toUpperCase() || generateBuilderTitle(seed);
   const stats = generateBuilderStats(seed);
   const builderNumber = generateBuilderNumber(seed);
   const id = `builder_${seed.toString(16)}`;

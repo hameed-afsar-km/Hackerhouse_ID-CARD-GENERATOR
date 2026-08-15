@@ -11,7 +11,7 @@ import {
   RefreshCw,
   Hand,
 } from 'lucide-react';
-import { PhotoFilterSettings, PhotoPreset, CardTheme, FrameStyle } from '@/types/builder';
+import { PhotoFilterSettings } from '@/types/builder';
 import { computeSmartAlign } from '@/lib/smart-crop';
 import { Button } from '@/components/ui/Button';
 
@@ -107,10 +107,6 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
       console.error('Failed to read photo', err);
       alert('Could not read this image. Try a JPG or PNG instead.');
     }
-  };
-
-  const handlePresetSelect = (preset: PhotoPreset) => {
-    onSettingsChange({ ...settings, preset });
   };
 
   const handleAutoAlign = () => {
@@ -349,84 +345,6 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
               accent="#0B6B3A"
               onChange={(v) => onSettingsChange({ ...settings, panY: v })}
             />
-          </div>
-
-          {/* Presets */}
-          <div className="pt-2">
-            <label className="font-bold block mb-2 flex items-center gap-1.5 text-ink/80">
-              <Sparkles className="w-3.5 h-3.5 text-pink" /> COLOR PRESETS
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {(['RAW', 'VIVID', 'DARK', 'WARM'] as const).map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => handlePresetSelect(p)}
-                  className={`py-2 px-1 text-center font-sans text-xs font-bold rounded-xl transition-all ${
-                    settings.preset === p
-                      ? 'bg-pink text-white shadow-xs'
-                      : 'bg-cream text-ink/70 hover:bg-white'
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* ID Card Theme Selection */}
-          <div className="pt-2 border-t border-primary-green/10">
-            <label className="font-bold block mb-2 flex items-center gap-1.5 text-ink/80 font-mono text-[11px] uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-[#0B6B3A]" /> CARD THEME PALETTE
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[10px] font-bold">
-              {[
-                { id: 'TROPICAL', label: '🌴 TROPICAL' },
-                { id: 'SUNSET', label: '🌅 SUNSET' },
-                { id: 'CYBER', label: '⚡ CYBER' },
-                { id: 'MINIMAL', label: '🍃 MINIMAL' },
-              ].map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => onSettingsChange({ ...settings, cardTheme: t.id as CardTheme })}
-                  className={`py-2 px-2 text-center rounded-xl transition-all ${
-                    (settings.cardTheme || 'TROPICAL') === t.id
-                      ? 'bg-[#0B6B3A] text-white shadow-xs font-extrabold'
-                      : 'bg-cream text-ink/70 hover:bg-white border border-primary-green/10'
-                  }`}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Profile Frame Style Selection */}
-          <div className="pt-2 border-t border-primary-green/10">
-            <label className="font-bold block mb-2 flex items-center gap-1.5 text-ink/80 font-mono text-[11px] uppercase">
-              <Sparkles className="w-3.5 h-3.5 text-[#FF007A]" /> PROFILE FRAME OVERLAY
-            </label>
-            <div className="grid grid-cols-3 gap-2 font-mono text-[10px] font-bold">
-              {[
-                { id: 'WREATH', label: '🌺 WREATH' },
-                { id: 'SUNBURST', label: '☀️ SUNBURST' },
-                { id: 'NEON', label: '💖 NEON GLOW' },
-              ].map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  onClick={() => onSettingsChange({ ...settings, frameStyle: f.id as FrameStyle })}
-                  className={`py-2 px-2 text-center rounded-xl transition-all ${
-                    (settings.frameStyle || 'WREATH') === f.id
-                      ? 'bg-[#FF007A] text-white shadow-xs font-extrabold'
-                      : 'bg-cream text-ink/70 hover:bg-white border border-primary-green/10'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       )}

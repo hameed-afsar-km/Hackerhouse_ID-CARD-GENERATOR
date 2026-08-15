@@ -26,8 +26,8 @@ const C_LEAF_DK    = '#0A4A25';
 
 // ─── Fonts ───────────────────────────────────────────────────────────────────
 const F_DISPLAY    = '"Imbue", "Playfair Display", serif';
-const F_DEVA       = '"Nirmala UI", "Noto Sans Devanagari", sans-serif';
-const F_MONO       = '"Courier New", monospace';
+const F_DEVA       = '"Noto Sans Devanagari", "Nirmala UI", sans-serif';
+const F_MONO       = '"Geist Mono", "Courier New", monospace';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    1.  BUILDER ID CARD  (1200 × 1600 logical → 1920 × 2560 canvas)
@@ -46,96 +46,235 @@ export async function drawBuilderCard(
   const W = CARD_BASE_WIDTH;
   const H = CARD_BASE_HEIGHT;
 
-  // ── Background ──────────────────────────────────────────────────────────
-  _drawBg(ctx, W, H);
+  // ── 0. Ambient backdrop ───────────────────────────────────────────────────
+  _drawBg(ctx, W, H, builder.photoSettings?.cardBackground || 'NIGHT');
 
-  // ── Card surface ─────────────────────────────────────────────────────────
-  // Leave 80 px margins on left/right, 80 top/bottom
-  const CX = 80, CY = 80, CW = W - 160, CH = H - 160;
+  // ── Card Surface Margins ───────────────────────────────────────────────────
+  const CX = 54, CY = 54, CW = W - 108, CH = H - 108;
 
   const cardTheme = builder.photoSettings?.cardTheme || 'TROPICAL';
-  const C_SUN    = '#FFB84D';
-  const C_SUNINK = '#4A2418';
-  const C_PEACH  = '#FFE7CE';
-  let bandGradCols = ['#FFC24B', '#FF7A5C', '#E84A8C'];
-  let pillColor = '#FF7A3D';
+  const frameStyle = builder.photoSettings?.frameStyle || (cardTheme === 'SUNSET' ? 'SUNBURST' : cardTheme === 'CYBER' ? 'CIRCUIT' : cardTheme === 'OBSIDIAN' ? 'OBSIDIAN' : cardTheme === 'HOLOGRAPHIC' ? 'HOLO' : cardTheme === 'MINIMAL' ? 'MINIMAL' : 'WREATH');
+
+  // Theme palettes with pure Tropical Goa emerald-gold as prime design
+  let surfGradCols = ['#042213', '#094225', '#02180C'];
+  let bandGradCols = ['#021F0F', '#0B6B3A', '#137F46'];
+  let footGradCols = ['#137F46', '#0B6B3A', '#021F0F'];
+  let borderCol = '#FFE600';
+  let innerBorderCol = '#FFB84D';
+  let nameCol = '#FFFFFF';
+  let pillColor = '#FF007A';
+  let pillTextColor = '#FFFFFF';
+  let chipBg = '#05331B';
+  let chipBorder = '#FFE600';
+  let chipTextColor = '#FBF6E9';
+  let plateBg = '#02190D';
+  let plateBorder = '#FFE600';
+  let plateCodeColor = '#FFE600';
+  let ringCols = ['#2EC4B6', '#FFE600', '#FF007A'];
+  let topPillBg = 'rgba(255,230,0,0.18)';
+  let topPillBorder = '#FFE600';
+  let topPillText = '#FFE600';
+  let isDarkSurface = true;
 
   if (cardTheme === 'SUNSET') {
+    surfGradCols = ['#1F0D24', '#2E1139', '#15061B'];
     bandGradCols = ['#FF6A3D', '#FF2E63', '#9C3FE4'];
+    footGradCols = ['#9C3FE4', '#FF2E63', '#FF6A3D'];
+    borderCol = '#FF9E54';
+    innerBorderCol = '#FF2E63';
     pillColor = '#FF5E3A';
+    chipBg = '#2A0E35';
+    chipBorder = '#FF6A3D';
+    chipTextColor = '#FFE7CE';
+    plateBg = '#190820';
+    plateBorder = '#FF6A3D';
+    plateCodeColor = '#FF9E54';
+    ringCols = ['#FF6A3D', '#FF2E63', '#9C3FE4'];
+    topPillBg = 'rgba(255,110,61,0.2)';
+    topPillBorder = '#FF9E54';
+    topPillText = '#FF9E54';
   } else if (cardTheme === 'CYBER') {
+    surfGradCols = ['#080E24', '#0F1D45', '#050917'];
     bandGradCols = ['#00E5FF', '#7A5CFF', '#FF2E88'];
+    footGradCols = ['#FF2E88', '#7A5CFF', '#00E5FF'];
+    borderCol = '#00E5FF';
+    innerBorderCol = '#FF2E88';
     pillColor = '#FF2E88';
+    chipBg = '#0E1E3D';
+    chipBorder = '#00E5FF';
+    chipTextColor = '#00E5FF';
+    plateBg = '#071020';
+    plateBorder = '#00E5FF';
+    plateCodeColor = '#00E5FF';
+    ringCols = ['#00E5FF', '#7A5CFF', '#FF2E88'];
+    topPillBg = 'rgba(0,229,255,0.18)';
+    topPillBorder = '#00E5FF';
+    topPillText = '#00E5FF';
+  } else if (cardTheme === 'OBSIDIAN') {
+    surfGradCols = ['#0D0F12', '#181C24', '#08090C'];
+    bandGradCols = ['#1E222B', '#2C3240', '#14171E'];
+    footGradCols = ['#2C3240', '#1E222B', '#14171E'];
+    borderCol = '#FFD700';
+    innerBorderCol = '#E6A817';
+    pillColor = '#D4AF37';
+    pillTextColor = '#0D0F12';
+    chipBg = '#14171E';
+    chipBorder = '#FFD700';
+    chipTextColor = '#FFD700';
+    plateBg = '#090A0D';
+    plateBorder = '#FFD700';
+    plateCodeColor = '#FFD700';
+    ringCols = ['#FFFFFF', '#FFD700', '#E6A817'];
+    topPillBg = 'rgba(255,215,0,0.18)';
+    topPillBorder = '#FFD700';
+    topPillText = '#FFD700';
+  } else if (cardTheme === 'HOLOGRAPHIC') {
+    surfGradCols = ['#0C1028', '#1A163B', '#090C1F'];
+    bandGradCols = ['#00FFFF', '#FF00FF', '#FFFF00'];
+    footGradCols = ['#FFFF00', '#FF00FF', '#00FFFF'];
+    borderCol = '#00FFFF';
+    innerBorderCol = '#FF00FF';
+    pillColor = '#FF00FF';
+    chipBg = '#121430';
+    chipBorder = '#00FFFF';
+    chipTextColor = '#00FFFF';
+    plateBg = '#080B1C';
+    plateBorder = '#00FFFF';
+    plateCodeColor = '#00FFFF';
+    ringCols = ['#00FFFF', '#FF00FF', '#FFFF00'];
+    topPillBg = 'rgba(0,255,255,0.2)';
+    topPillBorder = '#00FFFF';
+    topPillText = '#00FFFF';
   } else if (cardTheme === 'MINIMAL') {
+    surfGradCols = ['#FFFBF2', '#FFF6E5', '#FFEED6'];
     bandGradCols = ['#8A5A2B', '#6B4A2E', '#4A3418'];
+    footGradCols = ['#4A3418', '#6B4A2E', '#8A5A2B'];
+    borderCol = '#4A3418';
+    innerBorderCol = '#8A5A2B';
+    nameCol = '#4A2418';
     pillColor = '#6B4A2E';
+    chipBg = '#FFE7CE';
+    chipBorder = '#4A3418';
+    chipTextColor = '#4A3418';
+    plateBg = '#FFFDF8';
+    plateBorder = '#6B4A2E';
+    plateCodeColor = '#4A2418';
+    ringCols = ['#8A5A2B', '#6B4A2E', '#4A3418'];
+    topPillBg = 'rgba(74,36,24,0.1)';
+    topPillBorder = '#4A3418';
+    topPillText = '#4A3418';
+    isDarkSurface = false;
   }
 
-  // Soft offset shadow
+  // Soft offset drop shadow for realistic ID card elevation
   ctx.save();
-  ctx.shadowColor   = 'rgba(0,0,0,0.28)';
-  ctx.shadowBlur    = 46;
-  ctx.shadowOffsetY = 18;
-  ctx.fillStyle = C_CREAM;
-  rrect(ctx, CX, CY, CW, CH, 32, true, false);
+  ctx.shadowColor   = 'rgba(0,0,0,0.65)';
+  ctx.shadowBlur    = 64;
+  ctx.shadowOffsetY = 32;
+  ctx.fillStyle = '#062B17';
+  rrect(ctx, CX, CY, CW, CH, 36, true, false);
   ctx.restore();
 
-  // Surface fill — warm cream
+  // Surface fill — rich tropical emerald gradient
   const surfGrad = ctx.createLinearGradient(CX, CY, CX, CY + CH);
-  surfGrad.addColorStop(0, '#FFF9EA');
-  surfGrad.addColorStop(1, '#FFF1DC');
+  surfGrad.addColorStop(0, surfGradCols[0]);
+  surfGrad.addColorStop(0.5, surfGradCols[1]);
+  surfGrad.addColorStop(1, surfGradCols[2]);
   ctx.fillStyle = surfGrad;
-  rrect(ctx, CX, CY, CW, CH, 32, true, false);
+  rrect(ctx, CX, CY, CW, CH, 36, true, false);
 
-  // Retro double border — warm brown + sun yellow
-  ctx.strokeStyle = C_SUNINK;
-  ctx.lineWidth   = 4;
-  rrect(ctx, CX, CY, CW, CH, 32, false, true);
-  ctx.strokeStyle = C_SUN;
+  // Dappled ambient sunlight on tropical canopy
+  ctx.save();
+  const sunBeam = ctx.createRadialGradient(W / 2, CY + 480, 50, W / 2, CY + 480, CW * 0.65);
+  sunBeam.addColorStop(0, isDarkSurface ? 'rgba(255,230,0,0.18)' : 'rgba(255,255,255,0.45)');
+  sunBeam.addColorStop(0.5, isDarkSurface ? 'rgba(46,196,182,0.10)' : 'rgba(255,249,234,0.20)');
+  sunBeam.addColorStop(1, 'transparent');
+  ctx.fillStyle = sunBeam;
+  rrect(ctx, CX, CY, CW, CH, 36, true, false);
+  ctx.restore();
+
+  // Draw rich botanical foliage and theme-responsive background vector art
+  _drawCardBodyThemeArt(ctx, CX, CY, CW, CH, cardTheme, W, H, isDarkSurface);
+  if (cardTheme === 'TROPICAL') {
+    _drawCardFoliageFrame(ctx, CX, CY, CW, CH);
+  }
+
+  // Pure 24K Gold Double Border with corner flourishes
+  ctx.strokeStyle = borderCol;
+  ctx.lineWidth   = 4.5;
+  rrect(ctx, CX, CY, CW, CH, 36, false, true);
+  ctx.strokeStyle = innerBorderCol;
   ctx.lineWidth   = 2;
-  rrect(ctx, CX + 10, CY + 10, CW - 20, CH - 20, 24, false, true);
+  rrect(ctx, CX + 12, CY + 12, CW - 24, CH - 24, 28, false, true);
 
-  // ── Layout anchors (footer + code plate) ──────────────────────────────────
-  const FOOTER_H = 170;
+  // Corner gold star rivets
+  [
+    [CX + 28, CY + 28],
+    [CX + CW - 28, CY + 28],
+    [CX + 28, CY + CH - 28],
+    [CX + CW - 28, CY + CH - 28],
+  ].forEach(([rx, ry]) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    _circle(ctx, rx, ry, 7, true);
+    ctx.fillStyle = borderCol;
+    _circle(ctx, rx, ry, 4, true);
+  });
+
+  // ── Layout Geometry Heights ────────────────────────────────────────────────
+  const FOOTER_H = 185;
   const FBOT = CY + CH;
   const FTOP = FBOT - FOOTER_H;
-  const PLATE_H = 170;
-  const PLATE_W = CW - 120;
-  const plateTop = FTOP - PLATE_H - 26;
-  const chipBottomMax = plateTop - 30;
+  const PLATE_H = 185;
+  const PLATE_W = CW - 90;
+  const plateTop = FTOP - PLATE_H - 24;
+  const chipBottomMax = plateTop - 22;
 
-  // ── Header band — HACKER HOUSE + location & date ──────────────────────────
-  const BH = 200; // band height
+  // ── 1 & 2. HEADER: TOP BADGE + HACKER HOUSE TITLE + LOCATION/DATE ───────────
+  const BH = 215; // Header Height
 
-  // Sunset gradient band
+  // Tropical header band
   const bandGrad = ctx.createLinearGradient(CX, CY, CX, CY + BH);
-  bandGrad.addColorStop(0,   bandGradCols[0]);
+  bandGrad.addColorStop(0,    bandGradCols[0]);
   bandGrad.addColorStop(0.55, bandGradCols[1]);
-  bandGrad.addColorStop(1,   bandGradCols[2]);
+  bandGrad.addColorStop(1,    bandGradCols[2]);
   ctx.fillStyle = bandGrad;
-  rrect(ctx, CX, CY, CW, BH, 32, true, false);
-  // Square off the bottom so it merges with the surface
+  rrect(ctx, CX, CY, CW, BH, 36, true, false);
   ctx.fillRect(CX, CY + BH - 24, CW, 24);
 
-  // Retro sun with rays on the right
-  _retroSun(ctx, CX + CW - 132, CY + 104, 34, 15, 'rgba(255,249,234,0.92)');
+  // Top Credential Pill: OFFICIAL BUILDER ID
+  const RW = 340, RH = 34;
+  ctx.fillStyle = topPillBg;
+  rrect(ctx, W / 2 - RW / 2, CY + 22, RW, RH, RH / 2, true, false);
+  ctx.strokeStyle = topPillBorder;
+  ctx.lineWidth = 1.5;
+  rrect(ctx, W / 2 - RW / 2, CY + 22, RW, RH, RH / 2, false, true);
+  ctx.fillStyle = topPillText;
+  ctx.font = `800 13px ${F_MONO}`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('✦ OFFICIAL BUILDER ID  ·  HH GOA 2026 ✦', W / 2, CY + 44);
 
-  // Pin dots
-  ctx.fillStyle = 'rgba(255,249,234,0.4)';
-  _circle(ctx, CX + 30, CY + 30, 7, true);
-  _circle(ctx, CX + CW - 30, CY + 30, 7, true);
+  // Flanking retro sunburst accents
+  _retroSun(ctx, CX + 92, CY + 112, 32, 14, isDarkSurface ? 'rgba(255,230,0,0.70)' : 'rgba(255,249,234,0.40)');
+  _retroSun(ctx, CX + CW - 92, CY + 112, 32, 14, isDarkSurface ? 'rgba(255,230,0,0.90)' : 'rgba(255,249,234,0.90)');
 
-  // HACKER HOUSE wordmark
+  // 1. HACKER HOUSE Title (Monumental Display Typography)
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle    = C_WHITE;
-  ctx.font         = `900 58px ${F_DISPLAY}`;
-  ctx.fillText('HACKER HOUSE', W / 2, CY + 96);
+  ctx.fillStyle    = isDarkSurface ? '#FFE600' : C_WHITE;
+  ctx.font         = `900 74px ${F_DISPLAY}`;
+  ctx.shadowColor  = isDarkSurface ? 'rgba(255,230,0,0.45)' : 'rgba(0,0,0,0.25)';
+  ctx.shadowBlur   = 16;
+  ctx.shadowOffsetY = 2;
+  ctx.fillText('HACKER HOUSE', W / 2, CY + 124);
+  ctx.shadowColor  = 'transparent';
+  ctx.shadowBlur   = 0;
+  ctx.shadowOffsetY = 0;
 
-  // Location & date — गोवा (Devanagari) + mono rest, centred on one baseline
-  ctx.fillStyle = 'rgba(255,249,234,0.9)';
+  // 2. Location and Date Line
+  ctx.fillStyle = isDarkSurface ? '#FFFFFF' : 'rgba(255,249,234,0.95)';
   ctx.textAlign = 'left';
-  ctx.font      = `700 22px ${F_DEVA}`;
+  ctx.font      = `700 24px ${F_DEVA}`;
   const goaStr = 'गोवा';
   const goaW   = ctx.measureText(goaStr).width;
   ctx.font = `700 22px ${F_MONO}`;
@@ -143,41 +282,61 @@ export async function drawBuilderCard(
   const restW   = ctx.measureText(restStr).width;
   const TAG_GAP = 18;
   let tagX = W / 2 - (goaW + TAG_GAP + restW) / 2;
-  ctx.font = `700 22px ${F_DEVA}`;
-  ctx.fillText(goaStr, tagX, CY + 156);
+  ctx.font = `700 24px ${F_DEVA}`;
+  ctx.fillText(goaStr, tagX, CY + 175);
   tagX += goaW + TAG_GAP;
   ctx.font = `700 22px ${F_MONO}`;
-  ctx.fillText(restStr, tagX, CY + 156);
+  ctx.fillText(restStr, tagX, CY + 175);
 
-  // Wavy divider spilling onto the surface
-  _waveStrip(ctx, CX, CY + BH - 8, CW, 30, bandGradCols[1]);
-  _waveStrip(ctx, CX, CY + BH + 10, CW, 18, 'rgba(255,184,77,0.55)');
+  // Wavy coastal divider
+  _waveStrip(ctx, CX, CY + BH - 8, CW, 32, bandGradCols[1]);
+  _waveStrip(ctx, CX, CY + BH + 10, CW, 20, isDarkSurface ? 'rgba(255,230,0,0.50)' : 'rgba(255,184,77,0.55)');
 
-  // ── Avatar photo — large circle with gradient border ──────────────────────
-  const PR   = 200; // photo radius
+  // ── 3. CIRCLE IMAGE FRAME (LARGE WITH BORDER GRADIENT) ────────────────────
+  const PR   = 210; // Large photo radius (diameter = 420px)
   const PCXV = W / 2;
-  const PCYV = CY + BH + 62 + PR;
+  const PCYV = CY + BH + 70 + PR;
 
-  // Warm halo behind the ring
-  ctx.fillStyle = 'rgba(255,184,77,0.35)';
-  _circle(ctx, PCXV, PCYV, PR + 42, true);
+  // Ambient emerald-gold halo behind the avatar
+  ctx.fillStyle = isDarkSurface ? 'rgba(46,196,182,0.32)' : 'rgba(255,184,77,0.38)';
+  _circle(ctx, PCXV, PCYV, PR + 48, true);
 
-  drawGradientRing(ctx, PCXV, PCYV, PR + 6, PR + 28, bandGradCols[2], bandGradCols[1], bandGradCols[0]);
-  ctx.strokeStyle = C_WHITE;
+  // Multi-stop gradient halo ring
+  drawGradientRing(ctx, PCXV, PCYV, PR + 6, PR + 30, ringCols[0], ringCols[1], ringCols[2]);
+
+  // Crisp inner rim
+  ctx.strokeStyle = isDarkSurface ? '#FFE600' : C_WHITE;
   ctx.lineWidth   = 5;
   _circle(ctx, PCXV, PCYV, PR - 4, false, true);
 
+  // Draw user photo or avatar monogram
   await _drawPhoto(ctx, builder, PCXV, PCYV, PR);
 
-  // ── Identity ──────────────────────────────────────────────────────────────
-  let y = PCYV + PR + 58;
+  // Dynamic Theme Frame Overlay
+  if (frameStyle === 'SUNBURST' || cardTheme === 'SUNSET') {
+    _drawProfileSunburstFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  } else if (frameStyle === 'CIRCUIT' || cardTheme === 'CYBER') {
+    _drawProfileCircuitFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  } else if (frameStyle === 'NEON') {
+    _drawProfileNeonFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  } else if (frameStyle === 'OBSIDIAN' || cardTheme === 'OBSIDIAN') {
+    _drawProfileObsidianFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  } else if (frameStyle === 'HOLO' || cardTheme === 'HOLOGRAPHIC') {
+    _drawProfileHoloFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  } else if (frameStyle === 'MINIMAL' || cardTheme === 'MINIMAL') {
+    _drawProfileMinimalFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  } else {
+    _drawProfileFoliageFrame(ctx, PCXV, PCYV, PR, PR + 30);
+  }
 
-  // Name (scaled to fit, up to two lines)
-  ctx.fillStyle    = C_SUNINK;
+  // ── 4. NAME (BOLD CENTERED DISPLAY TYPOGRAPHY) ────────────────────────────
+  let y = PCYV + PR + 56;
+
+  ctx.fillStyle    = nameCol;
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'alphabetic';
-  const nameStr  = builder.name.toUpperCase();
-  let nameFS = 62;
+  const nameStr  = (builder.name || 'BUILDER').toUpperCase();
+  let nameFS = 64;
   ctx.font = `900 ${nameFS}px ${F_DISPLAY}`;
   let nameLines = [nameStr];
   if (ctx.measureText(nameStr).width > CW - 90) {
@@ -196,52 +355,56 @@ export async function drawBuilderCard(
     ctx.font = `900 ${nameFS}px ${F_DISPLAY}`;
   }
   nameLines.forEach((line, i) => {
+    if (isDarkSurface) {
+      ctx.shadowColor = 'rgba(0,0,0,0.65)';
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 3;
+    }
     ctx.fillText(line, W / 2, y + i * Math.round(nameFS * 1.02));
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
   });
-  y += nameLines.length * Math.round(nameFS * 1.02) + 18;
+  y += nameLines.length * Math.round(nameFS * 1.02) + 16;
 
-  // ROLE pill
-  const titleStr = builder.title.toUpperCase();
-  let titleFS = 36;
-  ctx.font = `700 ${titleFS}px ${F_DISPLAY}`;
-  while (titleFS > 22 && ctx.measureText(titleStr).width > CW - 200) {
+  // ── 5. ROLE (STYLIZED TROPICAL ROLE CAPSULE - ENLARGED) ───────────────────
+  const titleStr = `✦ ${(builder.title || 'BUILDER').toUpperCase()} ✦`;
+  let titleFS = 46;
+  ctx.font = `800 ${titleFS}px ${F_DISPLAY}`;
+  while (titleFS > 24 && ctx.measureText(titleStr).width > CW - 140) {
     titleFS -= 2;
-    ctx.font = `700 ${titleFS}px ${F_DISPLAY}`;
+    ctx.font = `800 ${titleFS}px ${F_DISPLAY}`;
   }
-  const pillH = 58;
-  const tW = ctx.measureText(titleStr).width + 64;
+  const pillH = 68;
+  const tW = Math.min(CW - 80, ctx.measureText(titleStr).width + 80);
   ctx.save();
   ctx.translate(W / 2, y + pillH / 2);
-  ctx.rotate(-0.03);
+  ctx.rotate(-0.02);
   ctx.fillStyle = pillColor;
   rrect(ctx, -tW / 2, -pillH / 2, tW, pillH, pillH / 2, true, false);
-  ctx.strokeStyle = C_CREAM;
-  ctx.lineWidth   = 3;
+  ctx.strokeStyle = isDarkSurface ? '#FFE600' : C_CREAM;
+  ctx.lineWidth   = 4;
   rrect(ctx, -tW / 2, -pillH / 2, tW, pillH, pillH / 2, false, true);
-  ctx.fillStyle = C_WHITE;
-  ctx.fillText(titleStr, 0, pillH / 2 - 20);
+  ctx.fillStyle = pillTextColor;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(titleStr, 0, 1);
   ctx.restore();
-  y += pillH + 30;
+  y += pillH + 20;
 
-  // ── SKILL STACK chips ─────────────────────────────────────────────────────
+  // ── 6. SKILL STACK (LABEL + CENTERED TECH TAGS - ENLARGED) ────────────────
   const stack = builder.stack || [];
   if (stack.length > 0) {
-    ctx.fillStyle = 'rgba(74,36,24,0.55)';
-    ctx.font      = `800 15px ${F_MONO}`;
-    ctx.fillText('SKILL STACK', W / 2, y);
-    y += 26;
+    const PAD = 32, GAP = 14, BADH = 58, chipFS = 26;
+    ctx.font = `800 ${chipFS}px ${F_MONO}`;
 
-    const PAD = 26, GAP = 12, BADH = 44, chipFS = 20;
-    ctx.font = `700 ${chipFS}px ${F_MONO}`;
-
-    // Two-row wrapping; anything that can't fit collapses into a "+N MORE" chip
     const rows: string[][] = [[]];
     let rowW = 0;
     let leftOver = 0;
     stack.forEach((s) => {
       const w = ctx.measureText(s).width + PAD * 2;
       if (leftOver > 0) { leftOver += 1; return; }
-      if (rowW + w + GAP > CW - 90 && rows[rows.length - 1].length > 0) {
+      if (rowW + w + GAP > CW - 80 && rows[rows.length - 1].length > 0) {
         if (rows.length >= 2) { leftOver = 1; return; }
         rows.push([]);
         rowW = 0;
@@ -253,12 +416,11 @@ export async function drawBuilderCard(
       rows[1][rows[1].length - 1] = `+${leftOver} MORE`;
     }
 
-    // Draw only as many rows as fit above the code plate
     let nRowsFit = 0;
     let ry = y;
     while (nRowsFit < 2 && ry + BADH <= chipBottomMax) {
       nRowsFit += 1;
-      ry += BADH + 12;
+      ry += BADH + 10;
     }
     const drawnRows = rows.slice(0, Math.max(1, nRowsFit));
     if (rows.length > drawnRows.length) {
@@ -273,78 +435,104 @@ export async function drawBuilderCard(
       const tot = ws.reduce((a, b) => a + b, 0) + GAP * (row.length - 1);
       let sx = W / 2 - tot / 2;
       row.forEach((s, i) => {
-        ctx.fillStyle = C_PEACH;
-        ctx.strokeStyle = C_SUNINK;
-        ctx.lineWidth   = 3;
+        ctx.fillStyle = chipBg;
+        ctx.strokeStyle = chipBorder;
+        ctx.lineWidth   = 3.5;
         rrect(ctx, sx, y, ws[i], BADH, BADH / 2, true, true);
-        ctx.fillStyle = C_SUNINK;
+        ctx.fillStyle = chipTextColor;
         ctx.textAlign = 'center';
-        ctx.fillText(s, sx + ws[i] / 2, y + 29);
+        ctx.textBaseline = 'middle';
+        ctx.fillText(s, sx + ws[i] / 2, y + BADH / 2 + 1);
         sx += ws[i] + GAP;
       });
-      y += BADH + 12;
+      y += BADH + 10;
     });
   }
 
-  // ── 12-char code plate — tilted retro label, very big code ────────────────
+  // ── 7. 12 CHARACTER CODE IN THE CENTER, VERY BIG ─────────────────────────
   const code = formatClaimCode(resolveClaimCode(builder.claimCode, builder.builderNumber));
   ctx.save();
   ctx.translate(W / 2, plateTop + PLATE_H / 2);
-  ctx.rotate(-0.02);
-  ctx.fillStyle = C_CREAM;
+  ctx.rotate(-0.012);
+
+  // Soft plate drop shadow
+  ctx.shadowColor   = 'rgba(0,0,0,0.40)';
+  ctx.shadowBlur    = 24;
+  ctx.shadowOffsetY = 8;
+  ctx.fillStyle = plateBg;
   rrect(ctx, -PLATE_W / 2, -PLATE_H / 2, PLATE_W, PLATE_H, 24, true, false);
-  ctx.strokeStyle = pillColor;
-  ctx.lineWidth   = 4;
+  ctx.shadowColor = 'transparent';
+
+  // High security ticket borders & tech corner ticks
+  ctx.strokeStyle = plateBorder;
+  ctx.lineWidth   = 3.5;
   rrect(ctx, -PLATE_W / 2, -PLATE_H / 2, PLATE_W, PLATE_H, 24, false, true);
-  ctx.strokeStyle = C_SUN;
-  ctx.lineWidth   = 2;
-  rrect(ctx, -PLATE_W / 2 + 9, -PLATE_H / 2 + 9, PLATE_W - 18, PLATE_H - 18, 18, false, true);
+  ctx.strokeStyle = innerBorderCol;
+  ctx.lineWidth   = 1.5;
+  rrect(ctx, -PLATE_W / 2 + 8, -PLATE_H / 2 + 8, PLATE_W - 16, PLATE_H - 16, 18, false, true);
 
+  // Security micro-lines / barcode ticks on the right & left of the plate
+  const tickY = -PLATE_H / 2 + 30;
+  for (let i = 0; i < 6; i++) {
+    ctx.strokeStyle = i % 2 === 0 ? plateBorder : innerBorderCol;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-PLATE_W / 2 + 18 + i * 8, tickY);
+    ctx.lineTo(-PLATE_W / 2 + 18 + i * 8, tickY + 20);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(PLATE_W / 2 - 18 - i * 8, tickY);
+    ctx.lineTo(PLATE_W / 2 - 18 - i * 8, tickY + 20);
+    ctx.stroke();
+  }
+
+  // Label: ◆ 12-CHARACTER ACCESS CODE ◆
   ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(74,36,24,0.6)';
+  ctx.fillStyle = isDarkSurface ? 'rgba(255,230,0,0.90)' : 'rgba(74,36,24,0.65)';
   ctx.font      = `800 15px ${F_MONO}`;
-  ctx.fillText('UNIQUE CODE', 0, -PLATE_H / 2 + 38);
+  ctx.fillText('◆ 12-CHARACTER ACCESS CODE ◆', 0, -PLATE_H / 2 + 42);
 
-  let codeFS = 84;
+  // Very big 12-character code
+  let codeFS = 90;
   ctx.font = `900 ${codeFS}px ${F_MONO}`;
-  while (codeFS > 48 && ctx.measureText(code).width > PLATE_W - 64) {
+  while (codeFS > 46 && ctx.measureText(code).width > PLATE_W - 56) {
     codeFS -= 2;
     ctx.font = `900 ${codeFS}px ${F_MONO}`;
   }
-  ctx.fillStyle = C_SUNINK;
-  ctx.fillText(code, 0, PLATE_H / 2 - 44);
+  ctx.fillStyle = plateCodeColor;
+  ctx.fillText(code, 0, PLATE_H / 2 - 58);
   ctx.restore();
 
-  // ── Footer — #FrameInGoa, big & centred ───────────────────────────────────
-  // Sunset gradient band (reversed for depth)
+  // ── 8. FOOTER: #FrameInGoa IN CENTER BIG ──────────────────────────────────
   const footGrad = ctx.createLinearGradient(CX, FTOP, CX, CY + CH);
-  footGrad.addColorStop(0,   bandGradCols[2]);
-  footGrad.addColorStop(0.5, bandGradCols[1]);
-  footGrad.addColorStop(1,   bandGradCols[0]);
+  footGrad.addColorStop(0,   footGradCols[0]);
+  footGrad.addColorStop(0.5, footGradCols[1]);
+  footGrad.addColorStop(1,   footGradCols[2]);
   ctx.fillStyle = footGrad;
-  rrect(ctx, CX, FTOP, CW, FOOTER_H, 32, true, false);
-  // Square off the top corners so it merges with card body
+  rrect(ctx, CX, FTOP, CW, FOOTER_H, 36, true, false);
   ctx.fillRect(CX, FTOP, CW, 16);
 
-  // Retro sun on the right
-  _retroSun(ctx, CX + CW - 120, FTOP + 68, 26, 12, 'rgba(255,249,234,0.35)');
+  // Retro sun accents on footer sides
+  _retroSun(ctx, CX + 84, FTOP + 76, 26, 12, isDarkSurface ? 'rgba(255,230,0,0.60)' : 'rgba(255,249,234,0.30)');
+  _retroSun(ctx, CX + CW - 84, FTOP + 76, 26, 12, isDarkSurface ? 'rgba(255,230,0,0.60)' : 'rgba(255,249,234,0.30)');
 
-  // #FrameInGoa — cream with warm outline
+  // Waves lapping the top edge of the footer
+  _waveStrip(ctx, CX, FTOP - 14, CW, 28, isDarkSurface ? '#042213' : '#FFEED6');
+
+  // #FrameInGoa — big, bold, centered in footer
   ctx.textAlign = 'center';
-  ctx.font      = `900 58px ${F_DISPLAY}`;
-  ctx.strokeStyle = 'rgba(74,36,24,0.55)';
+  ctx.font      = `900 70px ${F_DISPLAY}`;
+  ctx.strokeStyle = isDarkSurface ? 'rgba(0,0,0,0.65)' : 'rgba(74,36,24,0.6)';
   ctx.lineWidth   = 8;
   ctx.lineJoin    = 'round';
-  ctx.strokeText('#FrameInGoa', W / 2, FTOP + 84);
-  ctx.fillStyle = C_WHITE;
-  ctx.fillText('#FrameInGoa', W / 2, FTOP + 84);
+  ctx.strokeText('#FrameInGoa', W / 2, FTOP + 92);
+  ctx.fillStyle = isDarkSurface ? '#FFFFFF' : C_WHITE;
+  ctx.fillText('#FrameInGoa', W / 2, FTOP + 92);
 
-  ctx.fillStyle = 'rgba(255,249,234,0.85)';
-  ctx.font      = `700 15px ${F_MONO}`;
-  ctx.fillText('HH GOA 2026  ·  BUILDER PASS', W / 2, FTOP + 132);
-
-  // Waves lapping the top edge of the footer — sea meets the sunset
-  _waveStrip(ctx, CX, FTOP - 14, CW, 26, '#FFF1DC');
+  ctx.fillStyle = isDarkSurface ? '#FFE600' : 'rgba(255,249,234,0.92)';
+  ctx.font      = `700 16px ${F_MONO}`;
+  ctx.fillText('HACKER HOUSE GOA 2026  ·  VERIFIED BUILDER ID', W / 2, FTOP + 144);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -369,7 +557,7 @@ export async function drawProfileFrame(
   const frameStyle = builder.photoSettings?.frameStyle || 'WREATH';
 
   // Background
-  _drawBg(ctx, S, S);
+  _drawBg(ctx, S, S, builder.photoSettings?.cardBackground || 'NIGHT');
 
   // ── Photo ─────────────────────────────────────────────────────────────────
   await _drawPhoto(ctx, builder, CX, CY_CIRCLE, R);
@@ -385,6 +573,14 @@ export async function drawProfileFrame(
     _drawProfileSunburstFrame(ctx, CX, CY_CIRCLE, R, RO);
   } else if (frameStyle === 'NEON') {
     _drawProfileNeonFrame(ctx, CX, CY_CIRCLE, R, RO);
+  } else if (frameStyle === 'CIRCUIT') {
+    _drawProfileCircuitFrame(ctx, CX, CY_CIRCLE, R, RO);
+  } else if (frameStyle === 'HOLO') {
+    _drawProfileHoloFrame(ctx, CX, CY_CIRCLE, R, RO);
+  } else if (frameStyle === 'OBSIDIAN') {
+    _drawProfileObsidianFrame(ctx, CX, CY_CIRCLE, R, RO);
+  } else if (frameStyle === 'MINIMAL') {
+    _drawProfileMinimalFrame(ctx, CX, CY_CIRCLE, R, RO);
   } else {
     _drawProfileFoliageFrame(ctx, CX, CY_CIRCLE, R, RO);
   }
@@ -467,6 +663,192 @@ export async function drawProfileFrame(
 }
 
 /**
+ * Obsidian Gold Luxury Frame Style —
+ * 24K liquid gold beveled luxury multi-ring with 8 diamond star markers and gold sparkle flares.
+ */
+function _drawProfileObsidianFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  ctx.save();
+  // Beveled outer liquid gold metallic ring
+  const goldGrad = ctx.createLinearGradient(cx - ro, cy - ro, cx + ro, cy + ro);
+  goldGrad.addColorStop(0, '#FFF3A8');
+  goldGrad.addColorStop(0.25, '#D4AF37');
+  goldGrad.addColorStop(0.5, '#AA7C11');
+  goldGrad.addColorStop(0.75, '#FFDF73');
+  goldGrad.addColorStop(1, '#996515');
+
+  ctx.shadowColor = 'rgba(212, 175, 55, 0.65)';
+  ctx.shadowBlur = 20;
+  ctx.strokeStyle = goldGrad;
+  ctx.lineWidth = 5.5;
+  _circle(ctx, cx, cy, ro + 12, false, true);
+
+  // Thin outer dashed precision ring
+  ctx.strokeStyle = 'rgba(255, 215, 0, 0.45)';
+  ctx.lineWidth = 1.5;
+  _circle(ctx, cx, cy, ro + 24, false, true);
+
+  // 8 Diamond faceted gold nodes at 45 degree intervals
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const px = cx + Math.cos(a) * (ro + 12);
+    const py = cy + Math.sin(a) * (ro + 12);
+    ctx.fillStyle = '#FFE066';
+    ctx.shadowColor = '#FFD700';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.moveTo(px, py - 6);
+    ctx.lineTo(px + 6, py);
+    ctx.lineTo(px, py + 6);
+    ctx.lineTo(px - 6, py);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Corner Gold Sparkles
+  [
+    [cx - ro * 0.76, cy - ro * 0.76],
+    [cx + ro * 0.76, cy - ro * 0.76],
+    [cx - ro * 0.76, cy + ro * 0.76],
+    [cx + ro * 0.76, cy + ro * 0.76],
+  ].forEach(([sx, sy]) => {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = '#FFD700';
+    ctx.shadowBlur = 12;
+    _circle(ctx, sx, sy, 3.5, true);
+    ctx.strokeStyle = 'rgba(255, 223, 115, 0.85)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(sx - 8, sy); ctx.lineTo(sx + 8, sy);
+    ctx.moveTo(sx, sy - 8); ctx.lineTo(sx, sy + 8);
+    ctx.stroke();
+  });
+
+  ctx.restore();
+}
+
+/**
+ * Minimal Precision Editorial Frame Style —
+ * Clean double ring with cardinal coordinate tick marks and precision calipers.
+ */
+function _drawProfileMinimalFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  ctx.save();
+  ctx.strokeStyle = '#4A3418';
+  ctx.lineWidth = 3.5;
+  _circle(ctx, cx, cy, ro + 10, false, true);
+
+  ctx.strokeStyle = 'rgba(74, 52, 24, 0.35)';
+  ctx.lineWidth = 1.5;
+  _circle(ctx, cx, cy, ro + 20, false, true);
+
+  // Precision cardinal tick marks around the ring (every 15 degrees)
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2;
+    const isMajor = i % 6 === 0;
+    const len = isMajor ? 14 : 7;
+    ctx.strokeStyle = isMajor ? '#4A3418' : 'rgba(74, 52, 24, 0.4)';
+    ctx.lineWidth = isMajor ? 2.5 : 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * (ro + 20), cy + Math.sin(a) * (ro + 20));
+    ctx.lineTo(cx + Math.cos(a) * (ro + 20 + len), cy + Math.sin(a) * (ro + 20 + len));
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/**
+ * Cyber Circuit Frame Style —
+ * Glowing cybernetic corner HUD brackets and neon circuit ticks.
+ */
+function _drawProfileCircuitFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  ctx.save();
+  const bLen = 52;
+  const rad = ro + 14;
+  const corners = [[-1, -1], [1, -1], [-1, 1], [1, 1]];
+  corners.forEach(([dx, dy]) => {
+    const px = cx + dx * rad * 0.72;
+    const py = cy + dy * rad * 0.72;
+    ctx.strokeStyle = '#00E5FF';
+    ctx.lineWidth = 4;
+    ctx.shadowColor = '#00E5FF';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.moveTo(px + dx * bLen, py);
+    ctx.lineTo(px, py);
+    ctx.lineTo(px, py + dy * bLen);
+    ctx.stroke();
+
+    // Corner tech node
+    ctx.fillStyle = '#FF2E88';
+    ctx.shadowColor = '#FF2E88';
+    _circle(ctx, px, py, 4.5, true);
+  });
+
+  // Circuit tick lines
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.65)';
+  ctx.lineWidth = 2.5;
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * (ro + 4), cy + Math.sin(a) * (ro + 4));
+    ctx.lineTo(cx + Math.cos(a) * (ro + 20), cy + Math.sin(a) * (ro + 20));
+    ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/**
+ * Holographic Shimmer Frame Style —
+ * Prismatic iridescent double ring with 4-point sparkle stars.
+ */
+function _drawProfileHoloFrame(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, r: number, ro: number
+) {
+  ctx.save();
+  const g = ctx.createLinearGradient(cx - ro, cy - ro, cx + ro, cy + ro);
+  g.addColorStop(0, '#00FFFF');
+  g.addColorStop(0.25, '#FF00FF');
+  g.addColorStop(0.5, '#FFFF00');
+  g.addColorStop(0.75, '#00FF00');
+  g.addColorStop(1, '#00FFFF');
+
+  ctx.shadowColor = 'rgba(0, 255, 255, 0.8)';
+  ctx.shadowBlur = 24;
+  ctx.strokeStyle = g;
+  ctx.lineWidth = 6;
+  _circle(ctx, cx, cy, ro + 14, false, true);
+
+  // Sparkle stars
+  [
+    [cx - ro * 0.82, cy - ro * 0.52],
+    [cx + ro * 0.85, cy - ro * 0.32],
+    [cx - ro * 0.62, cy + ro * 0.72],
+    [cx + ro * 0.72, cy + ro * 0.65],
+  ].forEach(([sx, sy]) => {
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = '#FFFFFF';
+    ctx.shadowBlur = 14;
+    _circle(ctx, sx, sy, 4, true);
+    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(sx - 11, sy); ctx.lineTo(sx + 11, sy);
+    ctx.moveTo(sx, sy - 11); ctx.lineTo(sx, sy + 11);
+    ctx.stroke();
+  });
+  ctx.restore();
+}
+
+/**
  * Dedicated tropical botanical wreath for the Profile Frame —
  * Fronds, Monstera leaves and Hibiscus blossoms wreathed around the circular avatar frame.
  */
@@ -477,35 +859,52 @@ function _drawProfileFoliageFrame(
   // Top-left diagonal of outer ring
   ctx.save();
   ctx.translate(cx - ro * 0.72, cy - ro * 0.72);
-  ctx.rotate(-Math.PI * 0.25);
-  _singleFrond(ctx, 0, 0, 115, 0, 0.25, C_LEAF_LT, C_LEAF_DK, 0.95);
-  _monsteraLeaf(ctx, -15, 20, 52, Math.PI * 0.15, C_LEAF_DK, 0.90);
-  _hibiscus(ctx, 20, -10, 18, C_PINK, C_YELLOW);
+  ctx.rotate(-Math.PI * 0.28);
+  _singleFrond(ctx, 0, 0, 130, 0, 0.28, C_LEAF_LT, C_LEAF_DK, 0.96);
+  _monsteraLeaf(ctx, -18, 22, 60, Math.PI * 0.18, C_LEAF_DK, 0.92);
+  _hibiscus(ctx, 24, -12, 22, C_PINK, C_YELLOW);
   ctx.restore();
 
   // Top-right diagonal of outer ring
   ctx.save();
   ctx.translate(cx + ro * 0.72, cy - ro * 0.72);
-  ctx.rotate(Math.PI * 0.25);
-  _singleFrond(ctx, 0, 0, 115, 0, 0.25, C_LEAF_LT, C_LEAF_DK, 0.95);
-  _monsteraLeaf(ctx, 15, 20, 52, -Math.PI * 0.15, C_LEAF_DK, 0.90);
-  _hibiscus(ctx, -20, -10, 18, C_PINK, C_YELLOW);
+  ctx.rotate(Math.PI * 0.28);
+  _singleFrond(ctx, 0, 0, 130, 0, 0.28, C_LEAF_LT, C_LEAF_DK, 0.96);
+  _monsteraLeaf(ctx, 18, 22, 60, -Math.PI * 0.18, C_LEAF_DK, 0.92);
+  _hibiscus(ctx, -24, -12, 22, C_PINK, C_YELLOW);
+  ctx.restore();
+
+  // Mid-left frond flourish
+  ctx.save();
+  ctx.translate(cx - ro - 8, cy);
+  ctx.rotate(-Math.PI * 0.05);
+  _singleFrond(ctx, 0, 0, 110, 0, 0.22, C_LEAF_LT, C_LEAF_DK, 0.90);
+  _monsteraLeaf(ctx, -14, 18, 50, Math.PI * 0.1, C_LEAF_DK, 0.86);
+  ctx.restore();
+
+  // Mid-right frond flourish
+  ctx.save();
+  ctx.translate(cx + ro + 8, cy);
+  ctx.rotate(Math.PI * 0.05);
+  _singleFrond(ctx, 0, 0, 110, 0, 0.22, C_LEAF_LT, C_LEAF_DK, 0.90);
+  _monsteraLeaf(ctx, 14, 18, 50, -Math.PI * 0.1, C_LEAF_DK, 0.86);
   ctx.restore();
 
   // Bottom-left diagonal of outer ring
   ctx.save();
   ctx.translate(cx - ro * 0.76, cy + ro * 0.65);
   ctx.rotate(-Math.PI * 0.75);
-  _singleFrond(ctx, 0, 0, 120, 0, 0.3, C_LEAF_LT, C_LEAF_DK, 0.90);
-  _monsteraLeaf(ctx, -10, 25, 58, 0, C_LEAF_DK, 0.88);
+  _singleFrond(ctx, 0, 0, 125, 0, 0.32, C_LEAF_LT, C_LEAF_DK, 0.92);
+  _monsteraLeaf(ctx, -12, 26, 62, 0, C_LEAF_DK, 0.90);
+  _hibiscus(ctx, -20, 12, 18, '#FF5E99', C_YELLOW);
   ctx.restore();
 
   // Bottom-right diagonal of outer ring
   ctx.save();
   ctx.translate(cx + ro * 0.76, cy + ro * 0.65);
   ctx.rotate(Math.PI * 0.75);
-  _singleFrond(ctx, 0, 0, 120, 0, 0.3, C_LEAF_LT, C_LEAF_DK, 0.90);
-  _monsteraLeaf(ctx, 10, 25, 58, 0, C_LEAF_DK, 0.88);
+  _singleFrond(ctx, 0, 0, 125, 0, 0.32, C_LEAF_LT, C_LEAF_DK, 0.92);
+  _monsteraLeaf(ctx, 12, 26, 62, 0, C_LEAF_DK, 0.90);
   _hibiscus(ctx, 25, 10, 20, '#FF4499', C_YELLOW);
   ctx.restore();
 }
@@ -577,6 +976,275 @@ function _drawProfileNeonFrame(
    All foliage is drawn INSIDE the card boundaries so it reads as a frame
    decoration rather than elements floating on the background.
    ═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Render theme-responsive vector background art inside the card body
+ * (behind the avatar, name, badges, and code plate).
+ */
+function _drawCardBodyThemeArt(
+  ctx: CanvasRenderingContext2D,
+  cx: number, cy: number, cw: number, ch: number,
+  theme: string,
+  W: number, H: number,
+  isDarkSurface: boolean
+) {
+  ctx.save();
+
+  // Clip all background vector artwork to inside the card boundary
+  ctx.beginPath();
+  rrect(ctx, cx, cy, cw, ch, 36, false, false);
+  ctx.clip();
+
+  if (theme === 'TROPICAL') {
+    // 1. Large sweeping tropical palm fronds on mid-left & mid-right margins
+    ctx.save();
+    // Mid-left arching palm frond
+    _drawSweepingPalm(ctx, cx - 20, cy + ch * 0.46, 290, Math.PI * 0.12, 0.45, 'rgba(26,122,66,0.60)', 'rgba(10,74,37,0.85)', 'rgba(255,230,0,0.35)');
+    // Mid-right arching palm frond (mirrored)
+    _drawSweepingPalm(ctx, cx + cw + 20, cy + ch * 0.52, 290, -Math.PI * 0.88, 0.45, 'rgba(26,122,66,0.60)', 'rgba(10,74,37,0.85)', 'rgba(255,230,0,0.35)');
+    
+    // Lower sweeping fronds
+    _drawSweepingPalm(ctx, cx - 15, cy + ch * 0.72, 250, -Math.PI * 0.1, 0.4, 'rgba(10,74,37,0.50)', 'rgba(6,78,41,0.75)', 'rgba(255,230,0,0.25)');
+    _drawSweepingPalm(ctx, cx + cw + 15, cy + ch * 0.32, 250, Math.PI * 0.9, 0.4, 'rgba(10,74,37,0.50)', 'rgba(6,78,41,0.75)', 'rgba(255,230,0,0.25)');
+
+    // Large Monstera leaf silhouettes at side flanks
+    _monsteraLeaf(ctx, cx + 55, cy + ch * 0.62, 115, Math.PI * 0.25, 'rgba(6,78,41,0.65)', 0.88);
+    _monsteraLeaf(ctx, cx + cw - 55, cy + ch * 0.40, 105, -Math.PI * 0.35, 'rgba(6,78,41,0.65)', 0.88);
+
+    // Floating hibiscus blossoms
+    _hibiscus(ctx, cx + 65, cy + ch * 0.36, 26, 'rgba(255,0,122,0.75)', 'rgba(255,230,0,0.9)');
+    _hibiscus(ctx, cx + cw - 65, cy + ch * 0.68, 24, 'rgba(255,0,122,0.75)', 'rgba(255,230,0,0.9)');
+
+    // Ambient floating golden pollen / fireflies in backdrop
+    for (let i = 0; i < 30; i++) {
+      const fx = cx + cw * _j(i, 43);
+      const fy = cy + ch * (0.18 + _j(i, 57) * 0.68);
+      ctx.fillStyle = `rgba(255,230,0,${(0.2 + _j(i, 61) * 0.45).toFixed(2)})`;
+      _circle(ctx, fx, fy, 1.8 + _j(i, 67) * 2.6, true);
+    }
+    ctx.restore();
+
+  } else if (theme === 'SUNSET') {
+    // Sunset solar flares and coconut frond silhouettes
+    ctx.save();
+    _drawSweepingPalm(ctx, cx - 20, cy + ch * 0.45, 280, Math.PI * 0.15, 0.4, 'rgba(255,94,58,0.55)', 'rgba(46,17,57,0.85)', 'rgba(255,230,0,0.4)');
+    _drawSweepingPalm(ctx, cx + cw + 20, cy + ch * 0.58, 280, -Math.PI * 0.85, 0.4, 'rgba(255,46,99,0.55)', 'rgba(46,17,57,0.85)', 'rgba(255,230,0,0.4)');
+    
+    // Radiant sun rays across background
+    ctx.strokeStyle = 'rgba(255,110,61,0.14)';
+    ctx.lineWidth = 3.5;
+    for (let i = 0; i < 16; i++) {
+      const a = (i / 16) * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(W / 2, cy + 300);
+      ctx.lineTo(W / 2 + Math.cos(a) * 850, cy + 300 + Math.sin(a) * 850);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+  } else if (theme === 'CYBER') {
+    // Cyber matrix HUD grid and circuit bus traces
+    ctx.save();
+    ctx.strokeStyle = 'rgba(0,229,255,0.18)';
+    ctx.lineWidth = 1.5;
+    // Diagonal tech grid lines
+    for (let x = cx - 200; x <= cx + cw + 200; x += 55) {
+      ctx.beginPath();
+      ctx.moveTo(x, cy);
+      ctx.lineTo(x + ch * 0.35, cy + ch);
+      ctx.stroke();
+    }
+    // Circuit traces flanking sides
+    _drawCircuitTraces(ctx, cx + 45, cy + ch * 0.35, 190, '#00E5FF', '#FF2E88');
+    _drawCircuitTraces(ctx, cx + cw - 45, cy + ch * 0.55, -190, '#00E5FF', '#FF2E88');
+    ctx.restore();
+
+  } else if (theme === 'OBSIDIAN') {
+    // Obsidian gold art-deco geometric lines and diamond stars
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,215,0,0.22)';
+    ctx.lineWidth = 2.5;
+    // Diamond chevron lattice
+    for (let dy = cy + 220; dy <= cy + ch - 220; dy += 120) {
+      ctx.beginPath();
+      ctx.moveTo(cx + 25, dy);
+      ctx.lineTo(cx + 95, dy + 60);
+      ctx.lineTo(cx + 25, dy + 120);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(cx + cw - 25, dy);
+      ctx.lineTo(cx + cw - 95, dy + 60);
+      ctx.lineTo(cx + cw - 25, dy + 120);
+      ctx.stroke();
+    }
+    // Gold diamond star sparkles
+    [
+      [cx + 80, cy + ch * 0.40],
+      [cx + cw - 80, cy + ch * 0.46],
+      [cx + 70, cy + ch * 0.65],
+      [cx + cw - 70, cy + ch * 0.62],
+    ].forEach(([sx, sy]) => {
+      ctx.fillStyle = '#FFE066';
+      _circle(ctx, sx, sy, 3.5, true);
+      ctx.strokeStyle = 'rgba(255,215,0,0.7)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(sx - 14, sy); ctx.lineTo(sx + 14, sy);
+      ctx.moveTo(sx, sy - 14); ctx.lineTo(sx, sy + 14);
+      ctx.stroke();
+    });
+    ctx.restore();
+
+  } else if (theme === 'HOLOGRAPHIC') {
+    // Holographic iridescent diagonal light rays and prism starbursts
+    ctx.save();
+    const holoGrad = ctx.createLinearGradient(cx, cy, cx + cw, cy + ch);
+    holoGrad.addColorStop(0, 'rgba(0,255,255,0.10)');
+    holoGrad.addColorStop(0.33, 'rgba(255,0,255,0.10)');
+    holoGrad.addColorStop(0.66, 'rgba(255,255,0,0.10)');
+    holoGrad.addColorStop(1, 'rgba(0,255,255,0.10)');
+    ctx.fillStyle = holoGrad;
+    ctx.fillRect(cx, cy, cw, ch);
+
+    // Prismatic 8-point stars
+    [
+      [cx + 85, cy + ch * 0.44],
+      [cx + cw - 85, cy + ch * 0.40],
+      [cx + 75, cy + ch * 0.66],
+      [cx + cw - 75, cy + ch * 0.64],
+    ].forEach(([sx, sy]) => {
+      ctx.strokeStyle = 'rgba(0,255,255,0.75)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(sx - 18, sy); ctx.lineTo(sx + 18, sy);
+      ctx.moveTo(sx, sy - 18); ctx.lineTo(sx, sy + 18);
+      ctx.moveTo(sx - 11, sy - 11); ctx.lineTo(sx + 11, sy + 11);
+      ctx.moveTo(sx - 11, sy + 11); ctx.lineTo(sx + 11, sy - 11);
+      ctx.stroke();
+      ctx.fillStyle = '#FFFFFF';
+      _circle(ctx, sx, sy, 3.5, true);
+    });
+    ctx.restore();
+
+  } else if (theme === 'MINIMAL') {
+    // Minimal Swiss botanical line engraving & precision coordinates
+    ctx.save();
+    ctx.strokeStyle = 'rgba(74,52,24,0.22)';
+    ctx.lineWidth = 1.5;
+    // Architectural coordinate lines
+    ctx.beginPath();
+    ctx.moveTo(cx + 45, cy + 180); ctx.lineTo(cx + 45, cy + ch - 180);
+    ctx.moveTo(cx + cw - 45, cy + 180); ctx.lineTo(cx + cw - 45, cy + ch - 180);
+    ctx.stroke();
+    // Fine-line botanical fronds in margins
+    _drawSweepingPalm(ctx, cx - 10, cy + ch * 0.48, 240, Math.PI * 0.12, 0.35, 'rgba(74,52,24,0.25)', 'rgba(74,52,24,0.35)', 'rgba(74,52,24,0.18)');
+    _drawSweepingPalm(ctx, cx + cw + 10, cy + ch * 0.52, 240, -Math.PI * 0.88, 0.35, 'rgba(74,52,24,0.25)', 'rgba(74,52,24,0.35)', 'rgba(74,52,24,0.18)');
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+/** Sweeping curved palm frond with individual leaflets and highlight. */
+function _drawSweepingPalm(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number,
+  length: number,
+  angle: number,
+  curvature: number,
+  leafCol: string,
+  stemCol: string,
+  highlightCol: string
+) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+
+  const endX = length;
+  const endY = length * curvature;
+
+  // Main curved rachis
+  ctx.strokeStyle = stemCol;
+  ctx.lineWidth = 4;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(length * 0.5, endY * 0.25, endX, endY);
+  ctx.stroke();
+
+  // Pinnae leaflets
+  const count = 18;
+  for (let i = 2; i <= count; i++) {
+    const t = i / count;
+    const px = endX * t;
+    const py = endY * t * t;
+    const len = (1 - t * 0.35) * 65;
+
+    // Upward leaflet
+    ctx.strokeStyle = leafCol;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.quadraticCurveTo(px - 10, py - len * 0.6, px - 18, py - len);
+    ctx.stroke();
+
+    // Downward leaflet
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.quadraticCurveTo(px + 10, py - len * 0.5, px + 20, py - len * 0.85);
+    ctx.stroke();
+
+    // Leaflet gold highlight on alternate leaves
+    if (i % 2 === 0) {
+      ctx.strokeStyle = highlightCol;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(px, py);
+      ctx.lineTo(px - 14, py - len * 0.8);
+      ctx.stroke();
+    }
+  }
+
+  ctx.restore();
+}
+
+/** Cyber circuit traces flanking card sides. */
+function _drawCircuitTraces(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number,
+  dir: number,
+  color1: string,
+  color2: string
+) {
+  ctx.save();
+  ctx.strokeStyle = color1;
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = color1;
+  ctx.shadowBlur = 8;
+
+  // Trace 1
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  ctx.lineTo(x + dir * 0.4, y);
+  ctx.lineTo(x + dir * 0.6, y + 40);
+  ctx.lineTo(x + dir, y + 40);
+  ctx.stroke();
+  ctx.fillStyle = color2;
+  _circle(ctx, x + dir, y + 40, 4.5, true);
+
+  // Trace 2
+  ctx.beginPath();
+  ctx.moveTo(x, y + 50);
+  ctx.lineTo(x + dir * 0.3, y + 50);
+  ctx.lineTo(x + dir * 0.5, y + 80);
+  ctx.lineTo(x + dir * 0.8, y + 80);
+  ctx.stroke();
+  ctx.fillStyle = color1;
+  _circle(ctx, x + dir * 0.8, y + 80, 4, true);
+
+  ctx.restore();
+}
 
 /**
  * Draw tropical fronds, leaves and flowers in the four inner corners of the
@@ -746,8 +1414,117 @@ function _hibiscus(
    SHARED UTILITIES
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/** Night-sky gradient background (navy → forest green → dark). */
-function _drawBg(ctx: CanvasRenderingContext2D, w: number, h: number) {
+/** Ambient backdrop behind the card. Four styles: NIGHT (default), SUNSET, FOREST, CYBER. */
+function _drawBg(ctx: CanvasRenderingContext2D, w: number, h: number, bg: string = 'NIGHT') {
+  // ── SUNSET ────────────────────────────────────────────────────────────────
+  if (bg === 'SUNSET') {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#2A0E33');
+    g.addColorStop(0.4, '#8E1E4E');
+    g.addColorStop(0.7, '#FF5E3A');
+    g.addColorStop(1, '#FF9E54');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // Glowing sun disc
+    const SX = w * 0.32, SY = h * 0.38, SR = Math.min(w, h) * 0.09;
+    const sun = ctx.createRadialGradient(SX, SY, 0, SX, SY, SR * 2.4);
+    sun.addColorStop(0, 'rgba(255,235,140,0.95)');
+    sun.addColorStop(0.4, 'rgba(255,180,90,0.7)');
+    sun.addColorStop(1, 'rgba(255,120,60,0)');
+    ctx.fillStyle = sun;
+    _circle(ctx, SX, SY, SR * 2.4, true);
+
+    // Distant birds
+    ctx.strokeStyle = 'rgba(45,10,30,0.55)';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 4; i++) {
+      const bx = w * (0.5 + _j(i, 3) * 0.4);
+      const by = h * (0.1 + _j(i, 9) * 0.12);
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.5, Math.PI, 0);
+      ctx.arc(bx + 8, by - 2.5, 4.5, Math.PI, 0);
+      ctx.stroke();
+    }
+    return;
+  }
+
+  // ── FOREST ────────────────────────────────────────────────────────────────
+  if (bg === 'FOREST') {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#02130A');
+    g.addColorStop(0.55, '#06341C');
+    g.addColorStop(1, '#0B6B3A');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // Jungle silhouettes rising from the base
+    ctx.fillStyle = 'rgba(1,12,6,0.6)';
+    for (let i = 0; i < 9; i++) {
+      const tx = w * _j(i, 5) - w * 0.05;
+      const tw = w * (0.12 + _j(i, 11) * 0.08);
+      const th = h * (0.15 + _j(i, 17) * 0.12);
+      ctx.beginPath();
+      ctx.moveTo(tx, h);
+      ctx.lineTo(tx + tw / 2, h - th);
+      ctx.lineTo(tx + tw, h);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Fireflies
+    for (let i = 0; i < 24; i++) {
+      const fx = w * _j(i, 23);
+      const fy = h * (0.25 + _j(i, 29) * 0.6);
+      ctx.fillStyle = `rgba(255,230,0,${(0.15 + _j(i, 31) * 0.4).toFixed(2)})`;
+      _circle(ctx, fx, fy, 0.8 + _j(i, 37) * 1.4, true);
+    }
+    return;
+  }
+
+  // ── CYBER ─────────────────────────────────────────────────────────────────
+  if (bg === 'CYBER') {
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#04050D');
+    g.addColorStop(0.6, '#080F22');
+    g.addColorStop(1, '#120A24');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+
+    // Neon grid
+    ctx.strokeStyle = 'rgba(0,229,255,0.10)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x <= w; x += 42) {
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, h);
+    }
+    for (let y = 0; y <= h; y += 42) {
+      ctx.moveTo(0, y);
+      ctx.lineTo(w, y);
+    }
+    ctx.stroke();
+
+    // Glowing horizon line
+    ctx.strokeStyle = 'rgba(0,229,255,0.35)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, h * 0.82);
+    ctx.lineTo(w, h * 0.82);
+    ctx.stroke();
+
+    // Neon data dots
+    for (let i = 0; i < 14; i++) {
+      const dx = w * _j(i, 41);
+      const dy = h * (0.2 + _j(i, 43) * 0.6);
+      ctx.fillStyle = `rgba(255,46,136,${(0.2 + _j(i, 47) * 0.5).toFixed(2)})`;
+      _circle(ctx, dx, dy, 1.2 + _j(i, 53) * 1.8, true);
+    }
+    return;
+  }
+
+  // ── NIGHT (default) ───────────────────────────────────────────────────────
   const g = ctx.createLinearGradient(0, 0, 0, h);
   g.addColorStop(0,    '#0D1F35');
   g.addColorStop(0.28, '#0C3530');

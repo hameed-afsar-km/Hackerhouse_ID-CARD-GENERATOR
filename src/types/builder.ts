@@ -14,8 +14,9 @@ export type StackCategory =
   | 'OTHER';
 
 export type PhotoPreset = 'RAW' | 'VIVID' | 'DARK' | 'WARM';
-export type CardTheme = 'TROPICAL' | 'SUNSET' | 'CYBER' | 'MINIMAL';
-export type FrameStyle = 'WREATH' | 'SUNBURST' | 'NEON';
+export type CardTheme = 'TROPICAL' | 'SUNSET' | 'CYBER' | 'OBSIDIAN' | 'HOLOGRAPHIC' | 'MINIMAL';
+export type FrameStyle = 'WREATH' | 'SUNBURST' | 'NEON' | 'CIRCUIT' | 'HOLO' | 'OBSIDIAN' | 'MINIMAL';
+export type CardBackground = 'NIGHT' | 'SUNSET' | 'FOREST' | 'CYBER';
 
 export interface PhotoFilterSettings {
   zoom: number; // 1 to 2
@@ -24,6 +25,7 @@ export interface PhotoFilterSettings {
   preset: PhotoPreset;
   cardTheme?: CardTheme;
   frameStyle?: FrameStyle;
+  cardBackground?: CardBackground;
 }
 
 export interface BuilderInput {
@@ -33,6 +35,7 @@ export interface BuilderInput {
   xUsername?: string; // optional @handle
   photoSettings: PhotoFilterSettings;
   seed?: number; // optional seed for deterministic generation
+  title?: string; // optional title override; otherwise rolled from the seed
 }
 
 export interface BuilderStats {

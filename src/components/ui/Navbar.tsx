@@ -26,8 +26,22 @@ export const Navbar: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
+    // Hysteresis band (shrink past 48, restore before 12) plus rAF throttling
+    // stops the sticky header's height animation from re-triggering itself via
+    // the scroll events fired while the header resizes.
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const y = window.scrollY;
+      setScrolled((prev) => (prev ? y > 12 : y > 48));
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
 
     const unsubscribe = onAuthStateChanged(getClientAuth(), (u) => setUser(u));
@@ -62,14 +76,14 @@ export const Navbar: React.FC = () => {
 
       {/* Main bar */}
       <div
-        className={`transition-all duration-300 ${
+        className={`transition-[background-color,box-shadow,border-color] duration-300 ${
           scrolled
             ? 'bg-[#0B6B3A]/85 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.3)] border-b border-white/10'
             : 'bg-[#0B6B3A]/40 backdrop-blur-md border-b border-white/5'
         }`}
       >
         <div
-          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${
+          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-[height] duration-300 ${
             scrolled ? 'h-16' : 'h-20'
           }`}
         >

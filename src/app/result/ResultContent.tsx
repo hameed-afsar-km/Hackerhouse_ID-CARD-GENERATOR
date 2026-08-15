@@ -3,11 +3,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Download, RefreshCw, Radio, ShieldCheck, Check, Sparkles, Layers, Image as ImageIcon, Camera, Send } from 'lucide-react';
+import { Download, RefreshCw, Radio, ShieldCheck, Check, Sparkles, Layers, Image as ImageIcon, Camera, Send, Expand } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { BuilderIdentity, PublicBuilder } from '@/types/builder';
 import { BuilderCardCanvas } from '@/components/canvas/BuilderCardCanvas';
 import { ProfileFrameCanvas } from '@/components/canvas/ProfileFrameCanvas';
+import { FullscreenCardOverlay } from '@/components/canvas/FullscreenCardOverlay';
 import { SAMPLE_BUILDERS } from '@/lib/demo-builders';
 
 const SHARE_LINK = 'https://hhgoa.com/result';
@@ -20,6 +21,7 @@ export default function ResultContent() {
   const [activeTab, setActiveTab] = useState<'card' | 'frame'>('card');
   const [downloading, setDownloading] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
+  const [fullscreenOpen, setFullscreenOpen] = useState<boolean>(false);
   const [builder, setBuilder] = useState<BuilderIdentity | null>(null);
 
   const passCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -229,17 +231,17 @@ See you in Goa — 28-31 Oct 2026.
           <div className="inline-flex bg-[#FBF6E9]/10 p-1.5 rounded-full border border-white/20 shadow-md gap-1">
             <button
               onClick={() => setActiveTab('card')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-mono text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-mono text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'card'
                   ? 'bg-[#FF007A] text-white shadow-md'
                   : 'text-[#FBF6E9] hover:bg-white/10'
               }`}
             >
-              <Layers className="w-4 h-4" /> BUILDER PASS (1920x2560)
+              <Layers className="w-4 h-4" /> BUILDER ID CARD (1920x2560)
             </button>
             <button
               onClick={() => setActiveTab('frame')}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-mono text-xs font-bold transition-all ${
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-mono text-xs font-bold transition-all cursor-pointer ${
                 activeTab === 'frame'
                   ? 'bg-[#FFE600] text-[#1A2E22] shadow-md'
                   : 'text-[#FBF6E9] hover:bg-white/10'
@@ -251,7 +253,16 @@ See you in Goa — 28-31 Oct 2026.
         </div>
 
         {/* Canvas Previews Container */}
-        <div className="max-w-lg mx-auto pinned-card pin-top-yellow p-4 shadow-2xl transition-all">
+        <div className="max-w-lg mx-auto pinned-card pin-top-yellow p-4 shadow-2xl transition-all relative">
+          <button
+            type="button"
+            onClick={() => setFullscreenOpen(true)}
+            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-[#FF007A] text-white flex items-center justify-center shadow-md hover:bg-[#E0006C] active:scale-95 transition-all cursor-pointer"
+            title="View Fullscreen"
+          >
+            <Expand className="w-4 h-4" />
+          </button>
+
           {/* Builder Pass Canvas */}
           <div className={activeTab === 'card' ? 'block' : 'hidden'}>
             <BuilderCardCanvas
@@ -378,6 +389,13 @@ See you in Goa — 28-31 Oct 2026.
           </div>
         </div>
       </main>
+
+      <FullscreenCardOverlay
+        builder={builder}
+        mode={activeTab}
+        open={fullscreenOpen}
+        onClose={() => setFullscreenOpen(false)}
+      />
     </div>
   );
 }

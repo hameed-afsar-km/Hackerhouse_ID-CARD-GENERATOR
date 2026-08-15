@@ -1,9 +1,17 @@
+'use client';
+
 import React from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export const Footer: React.FC = () => {
+  const pathname = usePathname();
+
+  // Hide footer on the creation studio page so it remains a pure 100vh workstation
+  if (pathname === '/create') return null;
+
   return (
-    <footer className="relative border-t border-white/10 text-[#FBF6E9] py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
+    <footer className="relative border-t border-white/10 text-[#FBF6E9] py-20 px-4 sm:px-6 lg:px-8 overflow-hidden min-h-screen flex flex-col justify-center">
       {/* Brand background image — desktop only; Android/mobile view uses plain text instead */}
       <div
         className="absolute inset-0 hidden sm:block"

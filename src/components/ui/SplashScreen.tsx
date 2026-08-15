@@ -169,7 +169,7 @@ export const SplashScreen = () => {
                 transition={{ delay: 1.05, duration: 0.35, ease: 'easeOut' }}
                 className="absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 w-56 sm:w-80 h-1.5 bg-[#FFE600] rounded-full origin-center pointer-events-none"
               />
-              <GoaBadge size="3xl" />
+              <GoaBadge size="4xl" />
             </motion.div>
           </div>
 
